@@ -120,7 +120,7 @@ class AdminLeaveListView(APIView):
 
 
 class CancelLeaveView(generics.DestroyAPIView):
-    queryset = Leave.objects.all()pip freeze > requirements.txt
+    queryset = Leave.objects.all()
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, *args, **kwargs):
