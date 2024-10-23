@@ -31,7 +31,7 @@ class RegisterView(APIView):
 
 This code checks if a user with the given username or email already exists in the database before proceeding with the registration. If such a user exists, it returns a `400 BAD REQUEST` response with an appropriate message.
 
-   中文回答
+   
 
    好的，您可以在 `RegisterView` 中添加检查用户是否已经注册的逻辑。以下是修改后的代码：
 
