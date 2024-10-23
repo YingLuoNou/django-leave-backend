@@ -31,9 +31,9 @@ class RegisterView(APIView):
 
 This code checks if a user with the given username or email already exists in the database before proceeding with the registration. If such a user exists, it returns a `400 BAD REQUEST` response with an appropriate message.
 
-zsyeh: 中文回答
+   中文回答
 
-GitHub Copilot: 好的，您可以在 `RegisterView` 中添加检查用户是否已经注册的逻辑。以下是修改后的代码：
+   好的，您可以在 `RegisterView` 中添加检查用户是否已经注册的逻辑。以下是修改后的代码：
 
 ```python
 from rest_framework import status
@@ -89,9 +89,9 @@ def request_leave(request):
 
 这样，`RegisterView` 会在注册时检查用户名和邮箱是否已经存在，并在存在时返回相应的错误信息。
 
-zsyeh: 登录的api是啥
+   登录的api是啥
 
-GitHub Copilot: 登录的 API 是通过 `TokenObtainPairView` 提供的。您可以通过以下 URL 进行登录：
+   登录的 API 是通过 `TokenObtainPairView` 提供的。您可以通过以下 URL 进行登录：
 
 ```
 POST /api/token/
@@ -125,9 +125,9 @@ curl -X POST http://your-domain.com/api/token/ -d "username=your_username&passwo
 }
 ```
 
-zsyeh: 注册和登录的绑定关系
+   注册和登录的绑定关系
 
-GitHub Copilot: 在 Django 中，注册和登录的绑定关系通常通过用户模型和认证系统来实现。以下是如何在 `urls.py` 中配置注册和登录的 URL 路径，并确保它们正确绑定到相应的视图。
+   在 Django 中，注册和登录的绑定关系通常通过用户模型和认证系统来实现。以下是如何在 `urls.py` 中配置注册和登录的 URL 路径，并确保它们正确绑定到相应的视图。
 
 首先，确保您有一个用于注册的视图，例如 `RegisterView`，以及用于登录的视图，例如 `TokenObtainPairView`。
 
@@ -156,9 +156,9 @@ urlpatterns = [
 
 确保您的 `RegisterView` 和 `TokenObtainPairView` 正确实现了注册和登录逻辑。这样，用户可以通过 `/api/register/` 进行注册，通过 `/api/token/` 进行登录，并通过 `/api/token/refresh/` 刷新他们的访问令牌。
 
-zsyeh: 通过 /api/register/ 进行注册报错404
+   通过 /api/register/ 进行注册报错404
 
-GitHub Copilot: 看起来您在 `urls.py` 中没有包含注册视图的路径。您需要确保在 `urls.py` 中添加注册视图的路径，并且在视图文件中正确定义 `RegisterView`。
+   看起来您在 `urls.py` 中没有包含注册视图的路径。您需要确保在 `urls.py` 中添加注册视图的路径，并且在视图文件中正确定义 `RegisterView`。
 
 首先，确保您的 `views.py` 文件中有 `RegisterView`：
 
@@ -206,14 +206,14 @@ urlpatterns = [
 
 确保 `RegisterView` 和 `UserRegisterSerializer` 已正确定义，并且 `urls.py` 文件中没有重复的路径定义。这样，用户可以通过 `/api/register/` 进行注册。
 
-zsyeh: 解释    path("admin/", admin.site.urls),
+   解释    path("admin/", admin.site.urls),
     path('api/', include('leave.urls')),
     path('api/', include('leave.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
 
-GitHub Copilot: 这段代码定义了 Django 项目的 URL 路径配置。每个 `path` 函数调用都将一个 URL 路径映射到一个视图或一组视图。以下是每一行的解释：
+   这段代码定义了 Django 项目的 URL 路径配置。每个 `path` 函数调用都将一个 URL 路径映射到一个视图或一组视图。以下是每一行的解释：
 
 1. `path("admin/", admin.site.urls),`
    - 这行代码将 `/admin/` 路径映射到 Django 管理站点的 URL 配置。访问 `/admin/` 时，将显示 Django 的管理界面。
@@ -241,9 +241,9 @@ path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
 这样可以避免重复定义路径导致的错误。
 
-zsyeh: 目前的问题是用户无法注册
+   目前的问题是用户无法注册
 
-GitHub Copilot: 为了确保用户能够通过 `/api/register/` 进行注册，您需要确保以下几点：
+   为了确保用户能够通过 `/api/register/` 进行注册，您需要确保以下几点：
 
 1. `RegisterView` 已正确定义。
 2. `urls.py` 中包含注册路径。
@@ -309,14 +309,14 @@ urlpatterns = [
 
 这样，用户应该能够通过 `/api/register/` 进行注册。如果仍然遇到问题，请确保您的 Django 项目已重新启动，并且没有其他路径冲突。
 
-zsyeh: Forbidden (403)
+   Forbidden (403)
 CSRF verification failed. Request aborted.
 
 You are seeing this message because this site requires a CSRF cookie when submitting forms. This cookie is required for security reasons, to ensure that your browser is not being hijacked by third parties.
 
 If you have configured your browser to disable cookies, please re-enable them, at least for this site, or for “same-origin” requests.
 
-GitHub Copilot: 这个错误是由于 CSRF（跨站请求伪造）保护机制引起的。Django 默认启用了 CSRF 保护，以防止恶意网站向您的站点发送请求。对于 API 端点，通常会禁用 CSRF 保护，因为它们通常使用令牌进行身份验证。
+   这个错误是由于 CSRF（跨站请求伪造）保护机制引起的。Django 默认启用了 CSRF 保护，以防止恶意网站向您的站点发送请求。对于 API 端点，通常会禁用 CSRF 保护，因为它们通常使用令牌进行身份验证。
 
 您可以通过在 `RegisterView` 中添加 `@csrf_exempt` 装饰器来禁用 CSRF 保护。以下是更新后的代码：
 
@@ -367,7 +367,7 @@ urlpatterns = [
 
 这样，您应该能够通过 `/api/register/` 进行注册，而不会遇到 CSRF 验证失败的问题。
 
-zsyeh: Forbidden (403)
+   Forbidden (403)
 CSRF verification failed. Request aborted.
 
 You are seeing this message because this site requires a CSRF cookie when submitting forms. This cookie is required for security reasons, to ensure that your browser is not being hijacked by third parties.
@@ -390,7 +390,7 @@ You’re seeing the help section of this page because you have DEBUG = True in y
 
 You can customize this page using the CSRF_FAILURE_VIEW setting.
 
-GitHub Copilot: 为了处理 CSRF 验证失败的问题，您可以在 Django REST Framework 中使用 `@csrf_exempt` 装饰器来禁用特定视图的 CSRF 保护。由于您已经在 `RegisterView` 中使用了 `@method_decorator(csrf_exempt, name='dispatch')`，但仍然遇到问题，可能是因为其他地方的配置问题。
+   为了处理 CSRF 验证失败的问题，您可以在 Django REST Framework 中使用 `@csrf_exempt` 装饰器来禁用特定视图的 CSRF 保护。由于您已经在 `RegisterView` 中使用了 `@method_decorator(csrf_exempt, name='dispatch')`，但仍然遇到问题，可能是因为其他地方的配置问题。
 
 以下是一些可能的解决方案：
 
@@ -479,9 +479,9 @@ fetch('/api/register/', {
 
 通过这些步骤，您应该能够解决 CSRF 验证失败的问题，并允许用户通过 `/api/register/` 进行注册。
 
-zsyeh: 为什么会触发csrf
+   为什么会触发csrf
 
-GitHub Copilot: 在 Django 中，CSRF 保护默认启用，并且会对所有 POST 请求进行验证。对于 API 端点，通常会禁用 CSRF 保护，因为它们通常使用令牌进行身份验证。
+   在 Django 中，CSRF 保护默认启用，并且会对所有 POST 请求进行验证。对于 API 端点，通常会禁用 CSRF 保护，因为它们通常使用令牌进行身份验证。
 
 在您的 `urls.py` 文件中，您将 `RegisterView.post` 直接映射到 URL 路径，这可能会导致 CSRF 验证问题。正确的做法是将视图类映射为视图实例。
 
@@ -526,9 +526,9 @@ class RegisterView(APIView):
 
 这样，您应该能够通过 `/register/` 进行注册，而不会遇到 CSRF 验证失败的问题。
 
-zsyeh: as_view是啥
+   as_view是啥
 
-GitHub Copilot: `as_view()` 是 Django 类视图（class-based views, CBVs）中的一个方法，用于将类视图转换为可调用的视图函数，以便在 URL 路由中使用。
+   `as_view()` 是 Django 类视图（class-based views, CBVs）中的一个方法，用于将类视图转换为可调用的视图函数，以便在 URL 路由中使用。
 
 在 Django 中，类视图提供了一种面向对象的方式来定义视图逻辑。类视图需要通过 `as_view()` 方法转换为视图函数，才能在 URL 路由中使用。
 
@@ -575,11 +575,11 @@ urlpatterns = [
 
 这样，Django 就能够正确地将 URL 路径 `/register/` 映射到 `RegisterView` 类视图，并处理相应的请求。
 
-zsyeh: 这里怎么看是什么表单
+   这里怎么看是什么表单
 
-GitHub Copilot: 
+   
 
-zsyeh: @method_decorator(csrf_exempt, name='dispatch')
+   @method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(APIView):
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
@@ -588,7 +588,7 @@ class RegisterView(APIView):
             return Response({'detail': 'User registered successfully!'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-GitHub Copilot: 要查看表单数据，您可以在视图中打印或记录 `request.data` 的内容。这将帮助您了解传递给视图的表单数据。
+   要查看表单数据，您可以在视图中打印或记录 `request.data` 的内容。这将帮助您了解传递给视图的表单数据。
 
 以下是更新后的 `RegisterView`，添加了打印 `request.data` 的代码：
 
@@ -633,9 +633,9 @@ class RegisterView(APIView):
 
 这样，您可以在日志文件中查看表单数据。
 
-zsyeh: 这个函数，我要给返回access token
+   这个函数，我要给返回access token
 
-GitHub Copilot: 要在用户注册成功后返回一个访问令牌（access token），您可以使用 `rest_framework_simplejwt` 提供的 `RefreshToken` 类来生成访问令牌。以下是更新后的 `RegisterView`，在用户注册成功后返回访问令牌：
+   要在用户注册成功后返回一个访问令牌（access token），您可以使用 `rest_framework_simplejwt` 提供的 `RefreshToken` 类来生成访问令牌。以下是更新后的 `RegisterView`，在用户注册成功后返回访问令牌：
 
 ```python
 # views.py
@@ -669,9 +669,9 @@ class RegisterView(APIView):
 
 这样，客户端在注册成功后就可以立即获得访问令牌，用于后续的身份验证请求。
 
-zsyeh: 给个时间示例
+   给个时间示例
 
-GitHub Copilot: 要在 Django 中处理与时间相关的示例，可以考虑创建一个视图来处理带有时间戳的请求。以下是一个简单的示例，展示如何在 URL 路由中处理时间参数，并在视图中使用这些参数。
+   要在 Django 中处理与时间相关的示例，可以考虑创建一个视图来处理带有时间戳的请求。以下是一个简单的示例，展示如何在 URL 路由中处理时间参数，并在视图中使用这些参数。
 
 首先，更新 `urls.py` 文件，添加一个新的路径来处理带有时间参数的请求：
 
@@ -684,9 +684,9 @@ from .views import request_leave, view_leave_status, approve_leave, RegisterView
 urlpatterns = [
     path('
 
-zsyeh: Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."
+   Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."
 
-GitHub Copilot: 这个错误信息表明，您在处理日期时间数据时，格式不正确。Django 和 DRF 通常期望日期时间格式为 ISO 8601 格式，即 `YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]`。
+   这个错误信息表明，您在处理日期时间数据时，格式不正确。Django 和 DRF 通常期望日期时间格式为 ISO 8601 格式，即 `YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]`。
 
 以下是一个示例，展示如何在视图中正确处理日期时间数据，并确保它们符合 ISO 8601 格式：
 
@@ -743,9 +743,9 @@ class TimeView(APIView):
 
 这个示例展示了如何在视图中处理日期时间数据，并确保它们符合 ISO 8601 格式。如果日期时间格式不正确，将返回一个错误消息。
 
-zsyeh: 时间只需要精确到年月日小时
+   时间只需要精确到年月日小时
 
-GitHub Copilot: 如果您只需要处理精确到年月日小时的日期时间数据，可以在视图中进行相应的解析和验证。以下是更新后的 `request_leave` 视图，确保日期时间数据只精确到年月日小时：
+   如果您只需要处理精确到年月日小时的日期时间数据，可以在视图中进行相应的解析和验证。以下是更新后的 `request_leave` 视图，确保日期时间数据只精确到年月日小时：
 
 ```python
 from rest_framework.decorators import api_view, permission_classes
@@ -792,9 +792,9 @@ def request_leave(request):
 
 这样，日期时间数据将只精确到年月日小时，并且在保存到数据库之前会被正确解析和验证。
 
-zsyeh: 管理员怎么批准
+   管理员怎么批准
 
-GitHub Copilot: 为了实现管理员批准请假请求的功能，您可以创建一个新的视图来处理批准请求。假设您的 `Leave` 模型有一个字段 `is_approved` 来表示请假请求是否已被批准。
+   为了实现管理员批准请假请求的功能，您可以创建一个新的视图来处理批准请求。假设您的 `Leave` 模型有一个字段 `is_approved` 来表示请假请求是否已被批准。
 
 以下是一个示例，展示如何实现管理员批准请假请求的功能：
 
@@ -867,9 +867,9 @@ POST /approve-leave/1/
 
 这个实现确保只有管理员用户可以批准请假请求，并且批准后会将 `is_approved` 字段设置为 `True`。
 
-zsyeh: 管理员的账号怎么稿
+   管理员的账号怎么稿
 
-GitHub Copilot: 要创建管理员账号，您可以通过以下几种方式进行操作：
+   要创建管理员账号，您可以通过以下几种方式进行操作：
 
 1. **通过 Django 管理命令创建超级用户**：
    使用 Django 提供的 `createsuperuser` 命令，可以在终端中创建一个超级用户（管理员账号）。
@@ -911,9 +911,9 @@ GitHub Copilot: 要创建管理员账号，您可以通过以下几种方式进�
 
 无论您选择哪种方法，创建的管理员用户都将具有访问 Django 管理后台和执行管理任务的权限。
 
-zsyeh: 管理员怎么批准请假
+   管理员怎么批准请假
 
-GitHub Copilot: 为了实现管理员批准请假请求的功能，您需要确保有一个视图来处理批准请求，并且只有管理员用户可以访问该视图。以下是详细步骤：
+   为了实现管理员批准请假请求的功能，您需要确保有一个视图来处理批准请求，并且只有管理员用户可以访问该视图。以下是详细步骤：
 
 1. **更新 `views.py` 文件**：创建一个新的视图 `ApproveLeaveView` 来处理批准请求，并确保只有管理员用户可以访问该视图。
 
@@ -975,10 +975,10 @@ POST /approve-leave/1/
 
 这个实现确保只有管理员用户可以批准请假请求，并且批准后会将 `is_approved` 字段设置为 `True`。
 
-zsyeh: 我使用api登录管理员Forbidden (403)
+   我使用api登录管理员Forbidden (403)
 CSRF verification failed. Request aborted.
 
-GitHub Copilot: 在使用 Django REST Framework 时，如果您遇到 CSRF 验证失败的问题，通常是因为 Django 默认启用了 CSRF 保护。对于 API 端点，您可以禁用 CSRF 保护，因为通常 API 使用的是基于令牌的身份验证，而不是基于会话的身份验证。
+   在使用 Django REST Framework 时，如果您遇到 CSRF 验证失败的问题，通常是因为 Django 默认启用了 CSRF 保护。对于 API 端点，您可以禁用 CSRF 保护，因为通常 API 使用的是基于令牌的身份验证，而不是基于会话的身份验证。
 
 以下是解决方法：
 
@@ -1048,9 +1048,9 @@ REST_FRAMEWORK = {
 
 通过以上步骤，您应该能够解决 CSRF 验证失败的问题，并确保只有管理员用户可以批准请假请求。
 
-zsyeh: 允许管理人员登录并查看批准所有请假信息
+   允许管理人员登录并查看批准所有请假信息
 
-GitHub Copilot: 为了允许管理员登录并查看和批准所有请假信息，您需要执行以下步骤：
+   为了允许管理员登录并查看和批准所有请假信息，您需要执行以下步骤：
 
 1. **创建视图来显示所有请假信息**：创建一个新的视图 `AdminLeaveListView`，该视图将列出所有请假信息，并允许管理员批准请假。
 
@@ -1161,11 +1161,11 @@ curl -X PATCH http://127.0.0.1:8000/admin/leaves/approve/1/ \
 
 通过以上步骤，您应该能够实现管理员登录并查看和批准所有请假信息的功能。
 
-zsyeh: {
+   {
     "detail": "Authentication credentials were not provided."
 }
 
-GitHub Copilot: 这个错误表明您的请求没有提供身份验证凭据。为了确保管理员能够登录并查看和批准所有请假信息，您需要确保在请求中包含正确的身份验证令牌。
+   这个错误表明您的请求没有提供身份验证凭据。为了确保管理员能够登录并查看和批准所有请假信息，您需要确保在请求中包含正确的身份验证令牌。
 
 以下是详细步骤：
 
@@ -1257,9 +1257,9 @@ class AdminLeaveListView(APIView):
 
 通过以上步骤，您应该能够解决身份验证凭据未提供的问题，并确保管理员能够登录并查看和批准所有请假信息。
 
-zsyeh: 这里的普通用户登录和管理员登录是一个路径吗
+   这里的普通用户登录和管理员登录是一个路径吗
 
-GitHub Copilot: 在 Django 中，普通用户和管理员用户可以使用相同的登录路径进行身份验证。通常，登录路径是通用的，身份验证后，系统会根据用户的权限和角色来决定他们可以访问的资源。
+   在 Django 中，普通用户和管理员用户可以使用相同的登录路径进行身份验证。通常，登录路径是通用的，身份验证后，系统会根据用户的权限和角色来决定他们可以访问的资源。
 
 以下是一个示例，展示如何配置普通用户和管理员用户使用相同的登录路径，并根据用户角色来访问不同的资源：
 
@@ -1368,9 +1368,9 @@ curl -X PATCH http://127.0.0.1:8000/admin/leaves/approve/1/ \
 
 通过以上步骤，您可以确保普通用户和管理员用户使用相同的登录路径，并根据他们的角色访问不同的资源。
 
-zsyeh: 这里的管理员可以使用jwt验证吗
+   这里的管理员可以使用jwt验证吗
 
-GitHub Copilot: 是的，管理员可以使用 JWT（JSON Web Token）进行身份验证。以下是如何在 Django 中配置 JWT 身份验证，并确保管理员可以使用 JWT 进行身份验证的步骤：
+   是的，管理员可以使用 JWT（JSON Web Token）进行身份验证。以下是如何在 Django 中配置 JWT 身份验证，并确保管理员可以使用 JWT 进行身份验证的步骤：
 
 ### 1. 安装依赖
 
@@ -1519,10 +1519,10 @@ curl -X PATCH http://127.0.0.1:8000/admin/leaves/approve/1/ \
 
 通过以上步骤，您可以确保管理员和普通用户使用 JWT 进行身份验证，并根据他们的角色访问不同的资源。
 
-zsyeh: path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+   path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),这两个是不是和我的path('login/', LoginView.as_view(), name='login')功能重合了？
 
-GitHub Copilot: 是的，`path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair')` 和 `path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh')` 提供了 JWT 身份验证的功能，与 `path('login/', LoginView.as_view(), name='login')` 提供的传统登录功能可能会有重叠。
+   是的，`path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair')` 和 `path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh')` 提供了 JWT 身份验证的功能，与 `path('login/', LoginView.as_view(), name='login')` 提供的传统登录功能可能会有重叠。
 
 具体来说：
 
@@ -1567,9 +1567,9 @@ urlpatterns = [
 
 选择一种身份验证方式并保持一致，可以简化您的代码和配置。
 
-zsyeh: 区别呢？
+   区别呢？
 
-GitHub Copilot: `TokenObtainPairView` 和 `LoginView` 都用于用户身份验证，但它们的实现方式和用途有所不同。以下是它们的区别：
+   `TokenObtainPairView` 和 `LoginView` 都用于用户身份验证，但它们的实现方式和用途有所不同。以下是它们的区别：
 
 ### `TokenObtainPairView` (JWT Authentication)
 
@@ -1646,9 +1646,9 @@ urlpatterns = [
 
 根据您的应用需求选择合适的身份验证方式，并确保在代码中保持一致。
 
-zsyeh: 前面使用了include，后面的api/还会生效吗？
+   前面使用了include，后面的api/还会生效吗？
 
-GitHub Copilot: 是的，前面使用了 `include` 并不会影响后面定义的 `api/` 路径。Django 的 URL 路由是按顺序匹配的，因此每个路径都会独立生效。
+   是的，前面使用了 `include` 并不会影响后面定义的 `api/` 路径。Django 的 URL 路由是按顺序匹配的，因此每个路径都会独立生效。
 
 具体来说，您的 `urls.py` 文件中定义了以下路径：
 
@@ -1698,9 +1698,9 @@ urlpatterns = [
 
 因此，您的 URL 配置是正确的，每条路径都会独立生效。
 
-zsyeh: 微信小程序使用哪个比较合适？
+   微信小程序使用哪个比较合适？
 
-GitHub Copilot: 在微信小程序中，通常使用基于 RESTful API 的身份验证方式更为合适。JWT（JSON Web Token）是一种常见的选择，因为它适用于无状态的身份验证，特别适合前后端分离的应用场景。
+   在微信小程序中，通常使用基于 RESTful API 的身份验证方式更为合适。JWT（JSON Web Token）是一种常见的选择，因为它适用于无状态的身份验证，特别适合前后端分离的应用场景。
 
 ### 为什么选择 JWT？
 
@@ -1806,9 +1806,9 @@ function refreshToken(callback) {
 
 对于微信小程序，使用 JWT 进行身份验证是一个合适的选择。它可以提供无状态的身份验证机制，适合前后端分离的应用场景。通过上述示例代码，您可以在微信小程序中实现基于 JWT 的身份验证。
 
-zsyeh: 为什么不建议使用传统的login
+   为什么不建议使用传统的login
 
-GitHub Copilot: 在微信小程序中，不建议使用传统的基于会话的登录方式（如 `LoginView`），主要有以下几个原因：
+   在微信小程序中，不建议使用传统的基于会话的登录方式（如 `LoginView`），主要有以下几个原因：
 
 ### 1. 无状态性
 - **传统会话**: 基于会话的身份验证需要在服务器端存储会话信息，这意味着服务器需要维护每个用户的会话状态。这在分布式系统中会增加复杂性，因为需要在多个服务器之间共享会话状态。
@@ -1922,9 +1922,9 @@ function refreshToken(callback) {
 
 通过上述示例代码，您可以在微信小程序中实现基于 JWT 的身份验证，从而享受其带来的各种优势。
 
-zsyeh: 这样的用postman怎么搞？
+   这样的用postman怎么搞？
 
-GitHub Copilot: 要在 Postman 中测试基于 JWT 的身份验证流程，可以按照以下步骤进行：
+   要在 Postman 中测试基于 JWT 的身份验证流程，可以按照以下步骤进行：
 
 ### 1. 获取访问令牌和刷新令牌
 
@@ -1995,11 +1995,11 @@ GitHub Copilot: 要在 Postman 中测试基于 JWT 的身份验证流程，可�
 
 通过上述步骤，您可以在 Postman 中测试基于 JWT 的身份验证流程，包括获取访问令牌、使用访问令牌进行身份验证以及刷新访问令牌。
 
-zsyeh: 注册报错{
+   注册报错{
     "detail": "Authentication credentials were not provided."
 }
 
-GitHub Copilot: 这个错误信息表明在访问某个需要身份验证的端点时，没有提供身份验证凭据。以下是一些可能的解决方案：
+   这个错误信息表明在访问某个需要身份验证的端点时，没有提供身份验证凭据。以下是一些可能的解决方案：
 
 ### 1. 确保在请求头中包含身份验证令牌
 
@@ -2100,9 +2100,9 @@ def register(request):
 
 通过上述步骤，您应该能够解决 "Authentication credentials were not provided." 错误，并正确处理注册请求。
 
-zsyeh: 注册为什么需要身份验证，http://127.0.0.1:8000/api/register/
+   注册为什么需要身份验证，http://127.0.0.1:8000/api/register/
 
-GitHub Copilot: 注册端点通常不需要身份验证，因为用户在注册时还没有账户和凭据。您可以通过以下步骤确保注册端点不需要身份验证：
+   注册端点通常不需要身份验证，因为用户在注册时还没有账户和凭据。您可以通过以下步骤确保注册端点不需要身份验证：
 
 ### 1. 确保视图允许未认证用户访问
 
@@ -2181,9 +2181,9 @@ REST_FRAMEWORK = {
 
 通过确保视图允许未认证用户访问、正确配置 URL 和测试注册端点，您可以解决注册端点需要身份验证的问题。
 
-zsyeh: "detail": "No active account found with the given credentials"什么意思
+   "detail": "No active account found with the given credentials"什么意思
 
-GitHub Copilot: 错误信息 `"detail": "No active account found with the given credentials"` 表示提供的凭据（用户名和密码）未能匹配任何活动账户。这通常发生在用户尝试登录时，提供的用户名或密码不正确，或者账户未激活。
+   错误信息 `"detail": "No active account found with the given credentials"` 表示提供的凭据（用户名和密码）未能匹配任何活动账户。这通常发生在用户尝试登录时，提供的用户名或密码不正确，或者账户未激活。
 
 ### 可能的原因和解决方案
 
@@ -2256,9 +2256,9 @@ class LoginView(APIView):
 
 通过确保用户名和密码正确、账户已激活，并正确处理登录逻辑，您可以解决 `"No active account found with the given credentials"` 错误。
 
-zsyeh: 使用access token
+   使用access token
 
-GitHub Copilot: 为了确保在登录时返回 `access token`，我们需要在 `LoginView` 中添加返回 `access token` 的逻辑。以下是修改后的代码：
+   为了确保在登录时返回 `access token`，我们需要在 `LoginView` 中添加返回 `access token` 的逻辑。以下是修改后的代码：
 
 ### 修改后的代码
 
@@ -2344,9 +2344,9 @@ class LoginView(APIView):
 
 通过这些修改，您可以确保在用户登录时返回 `access token`。
 
-zsyeh: 在登录的时候返回用户的身份
+   在登录的时候返回用户的身份
 
-GitHub Copilot: 为了在登录时返回用户的身份信息，可以在 `LoginView` 中添加用户相关的信息到响应中。以下是修改后的代码：
+   为了在登录时返回用户的身份信息，可以在 `LoginView` 中添加用户相关的信息到响应中。以下是修改后的代码：
 
 ### 修改后的代码
 
@@ -2432,9 +2432,9 @@ class LoginView(APIView):
 
 通过这些修改，您可以确保在用户登录时返回用户的身份信息。
 
-zsyeh: 我使用TokenObtainPairView.as_view()是合理的吗？
+   我使用TokenObtainPairView.as_view()是合理的吗？
 
-GitHub Copilot: `TokenObtainPairView.as_view()` 是合理的选择，特别是如果你使用的是 Django REST framework 的 Simple JWT 包来处理 JWT 认证。`TokenObtainPairView` 提供了一个标准的视图来获取 JWT 令牌对（`access` 和 `refresh` 令牌）。
+   `TokenObtainPairView.as_view()` 是合理的选择，特别是如果你使用的是 Django REST framework 的 Simple JWT 包来处理 JWT 认证。`TokenObtainPairView` 提供了一个标准的视图来获取 JWT 令牌对（`access` 和 `refresh` 令牌）。
 
 ### 示例代码
 
@@ -2491,9 +2491,9 @@ urlpatterns = [
 
 使用 `TokenObtainPairView.as_view()` 是合理且推荐的做法，特别是当你使用 Django REST framework 的 Simple JWT 包来处理 JWT 认证时。它提供了标准化的方式来获取和刷新 JWT 令牌。
 
-zsyeh: 使用postman应该怎么请求？
+   使用postman应该怎么请求？
 
-GitHub Copilot: 要使用 Postman 请求 `TokenObtainPairView.as_view()` 端点以获取 JWT 令牌，请按照以下步骤操作：
+   要使用 Postman 请求 `TokenObtainPairView.as_view()` 端点以获取 JWT 令牌，请按照以下步骤操作：
 
 ### 配置 Postman 请求
 
@@ -2546,9 +2546,9 @@ Content-Type: application/json
 
 通过这些步骤，您可以使用 Postman 请求 `TokenObtainPairView.as_view()` 端点来获取 JWT 令牌。
 
-zsyeh: 之后在postman中怎么使用token
+   之后在postman中怎么使用token
 
-GitHub Copilot: 在 Postman 中使用获取到的 JWT 令牌进行后续请求时，通常需要将令牌添加到请求的 `Authorization` 头中。以下是详细步骤：
+   在 Postman 中使用获取到的 JWT 令牌进行后续请求时，通常需要将令牌添加到请求的 `Authorization` 头中。以下是详细步骤：
 
 ### 步骤 1: 获取 JWT 令牌
 
@@ -2600,9 +2600,9 @@ Authorization: Bearer your_access_token
 
 通过将 `access token` 添加到请求的 `Authorization` 头中，并使用 `Bearer` 作为前缀，你可以在 Postman 中使用 JWT 令牌进行认证请求。
 
-zsyeh: 这不和经典的方式一样吗？
+   这不和经典的方式一样吗？
 
-GitHub Copilot: 是的，`TokenObtainPairView.as_view()` 是 Django REST framework Simple JWT 提供的标准方式，用于获取 JWT 令牌对（`access` 和 `refresh` 令牌）。它是经典且推荐的方式来处理 JWT 认证。
+   是的，`TokenObtainPairView.as_view()` 是 Django REST framework Simple JWT 提供的标准方式，用于获取 JWT 令牌对（`access` 和 `refresh` 令牌）。它是经典且推荐的方式来处理 JWT 认证。
 
 ### 在 `urls.py` 中使用 `TokenObtainPairView`
 
@@ -2677,11 +2677,11 @@ urlpatterns = [
 
 通过这些步骤，你可以使用标准的 `TokenObtainPairView` 和 `TokenRefreshView` 来处理 JWT 认证。
 
-zsyeh: 我使用如上方式得到了{
+   我使用如上方式得到了{
     "detail": "Authentication credentials were not provided."
 }
 
-GitHub Copilot: 这个错误信息表明你在请求受保护的端点时没有提供认证凭据。确保你在请求头中正确地包含了 `Authorization` 头和 `Bearer` 令牌。
+   这个错误信息表明你在请求受保护的端点时没有提供认证凭据。确保你在请求头中正确地包含了 `Authorization` 头和 `Bearer` 令牌。
 
 ### 步骤 1: 获取 JWT 令牌
 
@@ -2726,10 +2726,10 @@ Authorization: Bearer your_access_token
 
 确保在请求头中正确地包含 `Authorization` 头和 `Bearer` 令牌，以便通过 JWT 认证访问受保护的端点。
 
-zsyeh: 为什么没有接到成功相应，而是"detail": "Authentication credentials were not provided."
+   为什么没有接到成功相应，而是"detail": "Authentication credentials were not provided."
 }
 
-GitHub Copilot: 要解决这个问题，请确保以下几点：
+   要解决这个问题，请确保以下几点：
 
 1. **正确配置了 JWT 认证**:
    - 确保 Django REST framework 和 Simple JWT 已正确安装和配置。
@@ -2823,7 +2823,7 @@ Authorization: Bearer your_access_token
 
 确保在请求头中正确地包含 `Authorization` 头和 `Bearer` 令牌，以便通过 JWT 认证访问受保护的端点。如果问题仍然存在，请检查服务器日志以获取更多信息。
 
-zsyeh: 为什么这样配置REST_FRAMEWORK = {
+   为什么这样配置REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
@@ -2838,7 +2838,7 @@ zsyeh: 为什么这样配置REST_FRAMEWORK = {
     ),
 }可以
 
-GitHub Copilot: 你的问题在于使用了不同的认证类。`TokenAuthentication` 和 `SessionAuthentication` 与 `JWTAuthentication` 是不同的认证机制。
+   你的问题在于使用了不同的认证类。`TokenAuthentication` 和 `SessionAuthentication` 与 `JWTAuthentication` 是不同的认证机制。
 
 ### 区别
 
@@ -2917,9 +2917,9 @@ REST_FRAMEWORK = {
 
 确保你选择的认证机制与服务器端和客户端的配置一致。
 
-zsyeh: 所以我使用的是jwt还是token
+   所以我使用的是jwt还是token
 
-GitHub Copilot: 根据你提供的 `settings.py` 配置，你使用的是 **JWT 认证**。具体配置如下：
+   根据你提供的 `settings.py` 配置，你使用的是 **JWT 认证**。具体配置如下：
 
 ```python
 REST_FRAMEWORK = {
@@ -2974,9 +2974,9 @@ Authorization: Bearer your_access_token
 
 你当前的配置使用的是 JWT 认证。确保在请求头中正确地包含 `Authorization` 头和 `Bearer` 令牌，以便通过 JWT 认证访问受保护的端点。
 
-zsyeh: 管理员查看所有请假请求
+   管理员查看所有请假请求
 
-GitHub Copilot: 为了实现管理员查看所有请假请求的功能，你需要在 `views.py` 中创建一个视图，并在 `urls.py` 中配置相应的路由。
+   为了实现管理员查看所有请假请求的功能，你需要在 `views.py` 中创建一个视图，并在 `urls.py` 中配置相应的路由。
 
 ### 步骤
 
@@ -3044,9 +3044,9 @@ urlpatterns = [
 
 通过上述步骤，你已经实现了管理员查看所有请假请求的功能。管理员可以通过访问 `/admin/leaves/` 路由来查看所有请假请求。确保管理员用户具有适当的权限来访问该视图。
 
-zsyeh: 增加学生销假功能，注意，只有被批准的的才可以销假
+   增加学生销假功能，注意，只有被批准的的才可以销假
 
-GitHub Copilot: 为了增加学生销假功能，并确保只有被批准的请假请求才可以销假，你需要以下步骤：
+   为了增加学生销假功能，并确保只有被批准的请假请求才可以销假，你需要以下步骤：
 
 1. **创建视图**: 在 `views.py` 中创建一个视图来处理销假的逻辑。
 2. **配置路由**: 在 `urls.py` 中配置相应的路由。
@@ -3135,9 +3135,9 @@ urlpatterns = [
 
 通过上述步骤，你已经实现了学生销假的功能，并确保只有被批准的请假请求才可以销假。学生可以通过访问 `/cancel-leave/<leave_id>/` 路由来销假。
 
-zsyeh: 不要这样，销假之后直接删除这一条数据就可以
+   不要这样，销假之后直接删除这一条数据就可以
 
-GitHub Copilot: 明白了，我们可以通过直接删除请假记录来实现销假功能。以下是更新后的步骤：
+   明白了，我们可以通过直接删除请假记录来实现销假功能。以下是更新后的步骤：
 
 ### 步骤
 
@@ -3205,9 +3205,9 @@ urlpatterns = [
 
 通过上述步骤，你已经实现了学生销假的功能，并确保只有被批准的请假请求才可以销假。学生可以通过访问 `/cancel-leave/<leave_id>/` 路由来销假。
 
-zsyeh: 可以改动models
+   可以改动models
 
-GitHub Copilot: 好的，我们可以在 `models.py` 文件中定义 `LeaveRequest` 模型，并确保它包含必要的字段来表示请假状态和学生信息。以下是一个示例：
+   好的，我们可以在 `models.py` 文件中定义 `LeaveRequest` 模型，并确保它包含必要的字段来表示请假状态和学生信息。以下是一个示例：
 
 ### 更新模型
 
@@ -3287,7 +3287,7 @@ urlpatterns = [
 
 通过上述步骤，你已经实现了学生销假的功能，并确保只有被批准的请假请求才可以销假。学生可以通过访问 `/cancel-leave/<leave_id>/` 路由来销假。
 
-zsyeh: # leave/views.py
+   # leave/views.py
 
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
@@ -3310,7 +3310,7 @@ class CancelLeaveView(generics.DestroyAPIView):
         except LeaveRequest.DoesNotExist:
             return Response({'error': 'Leave request not found'}, status=status.HTTP_404_NOT_FOUND)
 
-GitHub Copilot: 好的，我们将整合 `CancelLeaveView` 视图到现有的 `views.py` 文件中，并确保所有功能正常工作。
+   好的，我们将整合 `CancelLeaveView` 视图到现有的 `views.py` 文件中，并确保所有功能正常工作。
 
 ### 更新后的 `views.py`
 
@@ -3391,9 +3391,9 @@ from django.urls import path
 from .views import request_leave, view_leave_status, approve_leave, CancelLeaveView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefresh
 
-zsyeh: 生成api、文档
+   生成api、文档
 
-GitHub Copilot: 好的，我们将为 `Leave` 模型生成 API 视图和相应的文档。以下是详细步骤：
+   好的，我们将为 `Leave` 模型生成 API 视图和相应的文档。以下是详细步骤：
 
 ### 1. 创建序列化器
 
@@ -3537,9 +3537,9 @@ schema_view = get_schema_view(
    ),
   
 
-zsyeh: 生成api文档
+   生成api文档
 
-GitHub Copilot: 为了生成 API 文档，我们将使用 `drf-yasg` 库。以下是详细步骤：
+   为了生成 API 文档，我们将使用 `drf-yasg` 库。以下是详细步骤：
 
 ### 1. 安装 `drf-yasg`
 
@@ -3678,9 +3678,9 @@ class CancelLeaveView(generics.DestroyAPIView):
 
 这样就完成了 API 文档的生成和配置。访问相应的 URL 即可查看 API 文档。
 
-zsyeh: 导出我的所有依赖配置版本
+   导出我的所有依赖配置版本
 
-GitHub Copilot: 要导出你的所有依赖配置版本，可以使用 `pip freeze` 命令将当前环境中的所有包及其版本导出到一个文件中。以下是具体步骤：
+   要导出你的所有依赖配置版本，可以使用 `pip freeze` 命令将当前环境中的所有包及其版本导出到一个文件中。以下是具体步骤：
 
 1. 打开终端。
 2. 运行以下命令将依赖项导出到 `requirements.txt` 文件中：
@@ -3708,9 +3708,9 @@ pip install -r requirements.txt
 
 这样就可以确保所有开发人员使用相同的依赖版本。
 
-zsyeh: 加入git，并上传到github
+   加入git，并上传到github
 
-GitHub Copilot: 以下是将你的项目加入 Git 并上传到 GitHub 的步骤：
+   以下是将你的项目加入 Git 并上传到 GitHub 的步骤：
 
 ### 1. 初始化 Git 仓库
 
@@ -3768,7 +3768,7 @@ git push -u origin master
 
 完成这些步骤后，你的项目将被上传到 GitHub。
 
-zsyeh: 报错The authenticity of host 'github.com (20.205.243.166)' can't be established.
+   报错The authenticity of host 'github.com (20.205.243.166)' can't be established.
 ECDSA key fingerprint is SHA256:p2QAMXNIC1TJYWeIOttrVc98/R1BUFWu3/LiyKgUfQM.
 Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
 Warning: Permanently added 'github.com,20.205.243.166' (ECDSA) to the list of known hosts.
@@ -3778,7 +3778,7 @@ fatal: Could not read from remote repository.
 Please make sure you have the correct access rights
 and the repository exists.
 
-GitHub Copilot: 这个错误通常是由于 SSH 密钥未正确配置或未添加到 GitHub 账户中引起的。以下是解决步骤：
+   这个错误通常是由于 SSH 密钥未正确配置或未添加到 GitHub 账户中引起的。以下是解决步骤：
 
 ### 1. 生成 SSH 密钥
 
@@ -3849,9 +3849,9 @@ git push -u origin master
 
 这样应该可以解决权限问题并成功推送代码到 GitHub。
 
-zsyeh: 完整的一段吗ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEfFWW88Qpjv3B3ikbZEg5lYOWb6gojGVjHlIB+9Yj/U zsyeh7286@gmail.com
+   完整的一段吗ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEfFWW88Qpjv3B3ikbZEg5lYOWb6gojGVjHlIB+9Yj/U zsyeh7286@gmail.com
 
-GitHub Copilot: 你提供的代码片段看起来是不完整的。为了确保代码的完整性和功能性，我将补全并优化代码片段。以下是完整的 `views.py` 文件中的相关部分：
+   你提供的代码片段看起来是不完整的。为了确保代码的完整性和功能性，我将补全并优化代码片段。以下是完整的 `views.py` 文件中的相关部分：
 
 ```python
 from rest_framework.views import APIView
@@ -3895,9 +3895,9 @@ def request_leave(request):
 
 请根据你的具体需求补充 `request_leave` 函数中的逻辑，比如保存请假申请到数据库等。
 
-zsyeh: 介绍一下这个项目
+   介绍一下这个项目
 
-GitHub Copilot: 这个项目看起来是一个基于 Django 和 Django REST framework (DRF) 的 Web 应用程序，主要功能包括用户认证和学生请假申请。以下是对项目的简要介绍：
+   这个项目看起来是一个基于 Django 和 Django REST framework (DRF) 的 Web 应用程序，主要功能包括用户认证和学生请假申请。以下是对项目的简要介绍：
 
 ### 项目功能
 
@@ -3969,7 +3969,7 @@ def request_leave(request):
 
 这个项目提供了基本的用户认证和学生请假申请功能，适用于需要用户身份验证和权限控制的 Web 应用程序。通过使用 Django 和 DRF，可以快速构建和扩展这些功能。
 
-zsyeh: gitpush的时候提示To github.com:zsyeh/-django-leave-backend.git
+   gitpush的时候提示To github.com:zsyeh/-django-leave-backend.git
  ! [rejected]        master -> master (fetch first)
 error: failed to push some refs to 'git@github.com:zsyeh/-django-leave-backend.git'
 hint: Updates were rejected because the remote contains work that you do
@@ -3978,7 +3978,7 @@ hint: to the same ref. You may want to first integrate the remote changes
 hint: (e.g., 'git pull ...') before pushing again.
 hint: See the 'Note about fast-forwards' in 'git push --help' for details.
 
-GitHub Copilot: 这个错误提示表明远程仓库包含你本地仓库没有的更新。为了避免覆盖远程仓库的更改，你需要先将远程仓库的更改拉取到本地，然后再进行推送。以下是解决步骤：
+   这个错误提示表明远程仓库包含你本地仓库没有的更新。为了避免覆盖远程仓库的更改，你需要先将远程仓库的更改拉取到本地，然后再进行推送。以下是解决步骤：
 
 ### 1. 拉取远程仓库的更改
 
@@ -4016,9 +4016,9 @@ git push origin master
 
 通过先拉取远程仓库的更改并解决可能的冲突，你可以确保本地和远程仓库的一致性，然后再进行推送。这样可以避免覆盖远程仓库的更改。
 
-zsyeh: 怎么以本地为准
+   怎么以本地为准
 
-GitHub Copilot: 如果你确定本地的更改是正确的，并且你想覆盖远程仓库的内容，可以使用 `--force` 选项强制推送本地分支到远程仓库。这将覆盖远程仓库的内容，请谨慎使用。
+   如果你确定本地的更改是正确的，并且你想覆盖远程仓库的内容，可以使用 `--force` 选项强制推送本地分支到远程仓库。这将覆盖远程仓库的内容，请谨慎使用。
 
 ### 强制推送本地分支到远程仓库
 
