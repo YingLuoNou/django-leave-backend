@@ -18,6 +18,10 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
 from rest_framework import generics, status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.models import User
 
 # 学生注册
 @permission_classes([AllowAny])
@@ -134,3 +138,16 @@ class CancelLeaveView(generics.DestroyAPIView):
                 return Response({'error': 'Only approved leaves can be cancelled'}, status=status.HTTP_400_BAD_REQUEST)
         except Leave.DoesNotExist:
             return Response({'error': 'Leave request not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+class UserInfoView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        user_info = {
+            'name': user.get_full_name(),
+            'student_id': user.username,  # 假设学号存储在 username 字段
+            'is_superuser': user.is_superuser,
+        }
+        return Response(user_info, status=status.HTTP_200_OK)
