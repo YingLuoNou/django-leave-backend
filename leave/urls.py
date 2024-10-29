@@ -6,6 +6,7 @@ from .views import RegisterView,LoginView
 from .views import AdminLeaveListView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import CancelLeaveView
+from .views import UserInfoView
 
 urlpatterns = [
     path('request-leave/', request_leave, name='request_leave'),#请假
@@ -21,4 +22,5 @@ urlpatterns = [
     path('admin/leaves/', AdminLeaveListView.as_view(), name='admin_leave_list'),
     path('admin/leaves/approve/<int:leave_id>/', AdminLeaveListView.as_view(), name='approve_leave'),
     path('cancel-leave/<int:leave_id>/', CancelLeaveView.as_view(), name='cancel_leave'),#销假
+    path('UserInfoView/', UserInfoView.as_view(), name='UserInfoView'),#查看用户信息
 ]
