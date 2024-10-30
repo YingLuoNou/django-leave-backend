@@ -12,7 +12,7 @@ cursor = conn.cursor()
 create_table_query = """
 CREATE TABLE IF NOT EXISTS students (
     name TEXT,
-    student_id TEXT PRIMARY KEY,
+    username TEXT PRIMARY KEY,
     password TEXT DEFAULT '123456',
     class TEXT DEFAULT 'None'
 )
@@ -30,11 +30,11 @@ for sheet_name, df in sheets.items():
     
     # 插入数据
     for index, row in df_filtered.iterrows():
-        insert_query = "INSERT INTO students (name, student_id, password, class) VALUES (?, ?, ?, ?)"
+        insert_query = "INSERT INTO students (name, username, password, class) VALUES (?, ?, ?, ?)"
         try:
             cursor.execute(insert_query, (row['姓名'], row['学号'], row['密码'], row['班级']))
         except sqlite3.IntegrityError:
-            print(f"Duplicate entry for student_id: {row['学号']}")
+            print(f"Duplicate entry for username: {row['学号']}")
 
 # 提交事务并关闭连接
 conn.commit()

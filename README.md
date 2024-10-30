@@ -1,3 +1,5 @@
+为了避免泄露用户的信息，gitignore了db.sqlite3文件
+所以请自行migrate
 To check if a user is already registered during the registration process, you can modify the `RegisterView` to include a check for existing users. Here's how you can do it:
 
 1. Check if a user with the provided username or email already exists.

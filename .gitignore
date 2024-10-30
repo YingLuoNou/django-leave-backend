@@ -1,0 +1,4 @@
+*.db
+*.sqlite3
+*.xlsx
+students_report.html

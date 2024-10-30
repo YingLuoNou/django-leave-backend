@@ -22,4 +22,4 @@ def generate_html_report(db_name, table_name, output_file):
 
 # 调用函数生成 HTML 报告
 # 三个参数含义分别是：数据库文件名、表名、输出文件名
-generate_html_report('db.sqlite3', 'auth_user', 'students_report.html')
+generate_html_report('db.sqlite3', 'django_admin_log', 'students_report.html')

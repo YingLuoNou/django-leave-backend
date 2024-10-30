@@ -1,13 +1,13 @@
 import sqlite3
 
-def query_student_by_id(db_name, table_name, student_id):
+def query_student_by_id(db_name, table_name, username):
     # 连接到 SQLite 数据库
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
     
     # 查询指定学号的学生信息
-    query = f"SELECT * FROM {table_name} WHERE student_id = ?"
-    cursor.execute(query, (student_id,))
+    query = f"SELECT * FROM {table_name} WHERE username = ?"
+    cursor.execute(query, (username,))
     
     # 获取查询结果
     record = cursor.fetchone()
@@ -17,18 +17,18 @@ def query_student_by_id(db_name, table_name, student_id):
     
     # 打印结果
     if record:
-        print(f"Student ID: {student_id}")
+        print(f"Student ID: {username}")
         for col_name, value in zip(column_names, record):
             print(f"{col_name}: {value}")
     else:
-        print(f"No record found for student_id: {student_id}")
+        print(f"No record found for username: {username}")
     
     # 关闭连接
     conn.close()
 
 # 调用查询函数
-student_id_to_query = '22110403011'  # 替换为你要查询的学号
-query_student_by_id('students.db', 'students', student_id_to_query)
+username_to_query = '22110403011'  # 替换为你要查询的学号
+query_student_by_id('students.db', 'students', username_to_query)
 
 
 def list_all_primary_keys(db_name):

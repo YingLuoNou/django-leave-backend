@@ -147,7 +147,7 @@ class UserInfoView(APIView):
         user = request.user
         user_info = {
             'name': user.get_full_name(),
-            'student_id': user.username,  # 假设学号存储在 username 字段
+            'username': user.username,  # 假设学号存储在 username 字段
             'is_superuser': user.is_superuser,
         }
         return Response(user_info, status=status.HTTP_200_OK)
