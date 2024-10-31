@@ -2,9 +2,8 @@
 from rest_framework import serializers
 from .models import Leave
 from django.contrib.auth.models import User
-from rest_framework import serializers
 from .models import RejectedLeave
-
+from .models import LeaveStub
 
 class LeaveSerializer(serializers.ModelSerializer):
     class Meta:
@@ -37,3 +36,13 @@ class RejectedLeaveSerializer(serializers.ModelSerializer):
     class Meta:
         model = RejectedLeave
         fields = '__all__'
+
+# serializers.py
+
+
+
+class LeaveStubSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LeaveStub
+        fields = '__all__'
+
