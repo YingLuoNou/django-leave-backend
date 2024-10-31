@@ -2,8 +2,8 @@
 from rest_framework import serializers
 from .models import Leave
 from django.contrib.auth.models import User
-
-
+from rest_framework import serializers
+from .models import RejectedLeave
 
 
 class LeaveSerializer(serializers.ModelSerializer):
@@ -30,3 +30,10 @@ class LeaveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Leave
         fields = '__all__'  # 根据你的 Leave 模型，定义字段
+
+
+
+class RejectedLeaveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RejectedLeave
+        fields = '__all__'

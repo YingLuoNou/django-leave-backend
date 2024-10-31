@@ -22,6 +22,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import User
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth.models import User
+from .models import Leave, LeaveStub, RejectedLeave
+from rest_framework.permissions import IsAuthenticated
+from .serializers import RejectedLeaveSerializer
 
 # 学生注册
 @permission_classes([AllowAny])
@@ -122,7 +129,7 @@ class AdminLeaveListView(APIView):
         leave.save()
         return Response({'detail': 'Leave request approved successfully'}, status=status.HTTP_200_OK)
 
-
+## 取消请假
 class CancelLeaveView(generics.DestroyAPIView):
     queryset = Leave.objects.all()
     permission_classes = [IsAuthenticated]
@@ -131,14 +138,43 @@ class CancelLeaveView(generics.DestroyAPIView):
         leave_id = kwargs.get('leave_id')
         try:
             leave_request = Leave.objects.get(id=leave_id, student=request.user)
-            if leave_request.is_approved:
+            if not leave_request.is_approved:
                 leave_request.delete()
                 return Response({'status': 'Leave cancelled successfully'}, status=status.HTTP_200_OK)
             else:
-                return Response({'error': 'Only approved leaves can be cancelled'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Only disapproved leaves can be cancelled'}, status=status.HTTP_400_BAD_REQUEST)
         except Leave.DoesNotExist:
             return Response({'error': 'Leave request not found'}, status=status.HTTP_404_NOT_FOUND)
-        
+
+
+
+# 销假
+class CompleteLeavingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        leave_id = kwargs.get('leave_id')
+        try:
+            leave_request = Leave.objects.get(id=leave_id, student=request.user)
+            if leave_request.is_approved:
+                # 将假条存储到LeaveStub类中
+                LeaveStub.objects.create(
+                    student=leave_request.student,
+                    name=leave_request.name,
+                    class_name=leave_request.class_name,
+                    start_date=leave_request.start_date,
+                    end_date=leave_request.end_date,
+                    reason=leave_request.reason,
+                    leave_time=leave_request.leave_time,
+                    is_approved=leave_request.is_approved
+                )
+                # 删除原假条
+                leave_request.delete()
+                return Response({'status': 'Leave completed and stored successfully'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'Only approved leaves can be completed'}, status=status.HTTP_400_BAD_REQUEST)
+        except Leave.DoesNotExist:
+            return Response({'error': 'Leave request not found'}, status=status.HTTP_404_NOT_FOUND)      
 
 class UserInfoView(APIView):
     permission_classes = [IsAuthenticated]
@@ -151,3 +187,39 @@ class UserInfoView(APIView):
             'is_superuser': user.is_superuser,
         }
         return Response(user_info, status=status.HTTP_200_OK)
+    
+class RejectLeaveView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def post(self, request, *args, **kwargs):
+        leave_id = kwargs.get('leave_id')
+        try:
+            leave_request = Leave.objects.get(id=leave_id)
+            if not leave_request.is_approved:
+                # 将假条存储到RejectedLeave类中
+                RejectedLeave.objects.create(
+                    student=leave_request.student,
+                    name=leave_request.name,
+                    class_name=leave_request.class_name,
+                    start_date=leave_request.start_date,
+                    end_date=leave_request.end_date,
+                    reason=leave_request.reason,
+                    leave_time=leave_request.leave_time,
+                    is_approved=leave_request.is_approved
+                )
+                # 删除原假条
+                leave_request.delete()
+                return Response({'status': 'Leave rejected and stored successfully'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'Only disapproved leaves can be rejected'}, status=status.HTTP_400_BAD_REQUEST)
+        except Leave.DoesNotExist:
+            return Response({'error': 'Leave request not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+# 学生用户查询自己被拒绝的请假条列表
+class RejectedLeaveListView(generics.ListAPIView):
+    serializer_class = RejectedLeaveSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return RejectedLeave.objects.filter(student=self.request.user)
