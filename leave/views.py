@@ -29,20 +29,6 @@ class RegisterView(APIView):
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# # 用户登录 （旧版的方法，不要使用，也请不要删除）
-# class LoginView(APIView):
-#     def post(self, request):
-#         username = request.data.get('username')
-#         password = request.data.get('password')
-#         user = authenticate(username=username, password=password)
-#         if user is not None:
-#             refresh = RefreshToken.for_user(user)
-#             return Response({
-#                 'refresh': str(refresh),
-#                 'access': str(refresh.access_token),
-#             }, status=status.HTTP_200_OK)
-#         return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
 # 学生提交请假申请 (未修改，未测试)
 # 重要：之前发现了一个bug，用户提交请假请求的后把status字段直接设置为1，这是不对的，应该是管理员来批准
 # 请假请求，所以这里要修改一下
@@ -109,8 +95,6 @@ class CancelLeaveView(generics.DestroyAPIView):
                 return Response({'error': 'Only disapproved leaves can be cancelled'}, status=status.HTTP_400_BAD_REQUEST)
         except Leave.DoesNotExist:
             return Response({'error': 'Leave request not found'}, status=status.HTTP_404_NOT_FOUND)
-
-
 
 # 销假
 @api_view(['PATCH'])
@@ -206,4 +190,15 @@ def view_completed_leave_list(request):
     """
     completed_leaves = Leave.objects.filter(student=request.user, status=3)
     serializer = LeaveSerializer(completed_leaves, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+# 管理员查看所有请假条
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def AdminLeaveListView(request):
+    """
+    管理员查看所有请假记录
+    """
+    all_leaves = Leave.objects.all()
+    serializer = LeaveSerializer(all_leaves, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
