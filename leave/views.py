@@ -1,36 +1,20 @@
 # views.py
 
-from django.contrib.auth.models import User
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Leave
 from .serializers import LeaveSerializer, UserRegisterSerializer
-from .serializers import UserRegisterSerializer
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
 from datetime import datetime
 from rest_framework.permissions import IsAdminUser
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
 from rest_framework import generics, status
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth.models import User
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth.models import User
-from .models import Leave, LeaveStub, RejectedLeave
-from rest_framework.permissions import IsAuthenticated
-from .serializers import RejectedLeaveSerializer
-from .serializers import LeaveStubSerializer
-# 学生注册
+from .models import Leave
+
+# 学生注册（不用修改了）
 @permission_classes([AllowAny])
 class RegisterView(APIView):
     def post(self, request):
@@ -45,30 +29,30 @@ class RegisterView(APIView):
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# 用户登录
-class LoginView(APIView):
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            }, status=status.HTTP_200_OK)
-        return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+# # 用户登录 （旧版的方法，不要使用，也请不要删除）
+# class LoginView(APIView):
+#     def post(self, request):
+#         username = request.data.get('username')
+#         password = request.data.get('password')
+#         user = authenticate(username=username, password=password)
+#         if user is not None:
+#             refresh = RefreshToken.for_user(user)
+#             return Response({
+#                 'refresh': str(refresh),
+#                 'access': str(refresh.access_token),
+#             }, status=status.HTTP_200_OK)
+#         return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
-# 学生提交请假申请
-
-
+# 学生提交请假申请 (未修改，未测试)
+# 重要：之前发现了一个bug，用户提交请假请求的后把status字段直接设置为1，这是不对的，应该是管理员来批准
+# 请假请求，所以这里要修改一下
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def request_leave(request):
     data = request.data
     student = request.user
     data['student'] = student.id
-    
+    data['status'] = 0  # 0表示未批准
     # 解析并验证日期时间数据
     datetime_str = data.get('datetime')
     if datetime_str:
@@ -78,7 +62,6 @@ def request_leave(request):
             data['datetime'] = parsed_datetime.isoformat()
         except ValueError:
             return Response({'error': 'Datetime has wrong format. Use YYYY-MM-DDTHH format.'}, status=status.HTTP_400_BAD_REQUEST)
-    
     serializer = LeaveSerializer(data=data)
     if serializer.is_valid():
         serializer.save()
@@ -104,30 +87,11 @@ def approve_leave(request, leave_id):
         return Response({'error': 'Leave not found'}, status=status.HTTP_404_NOT_FOUND)
     
     if request.user.is_superuser:  # 确保是管理员
-        leave.is_approved = True
+        leave.status = 1 # 1表示已批准
         leave.save()
         return Response({'status': 'Leave approved'})
     return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
 
-
-class AdminLeaveListView(APIView):
-    permission_classes = [IsAdminUser]
-
-    def get(self, request):
-        leaves = Leave.objects.all()
-        serializer = LeaveSerializer(leaves, many=True)
-        return Response(serializer.data)
-
-    @csrf_exempt
-    def patch(self, request, leave_id):
-        try:
-            leave = Leave.objects.get(id=leave_id)
-        except Leave.DoesNotExist:
-            return Response({'error': 'Leave request not found'}, status=status.HTTP_404_NOT_FOUND)
-        
-        leave.is_approved = True
-        leave.save()
-        return Response({'detail': 'Leave request approved successfully'}, status=status.HTTP_200_OK)
 
 ## 取消请假
 class CancelLeaveView(generics.DestroyAPIView):
@@ -138,7 +102,7 @@ class CancelLeaveView(generics.DestroyAPIView):
         leave_id = kwargs.get('leave_id')
         try:
             leave_request = Leave.objects.get(id=leave_id, student=request.user)
-            if not leave_request.is_approved:
+            if leave_request.status == 0:
                 leave_request.delete()
                 return Response({'status': 'Leave cancelled successfully'}, status=status.HTTP_200_OK)
             else:
@@ -154,20 +118,8 @@ class CancelLeaveView(generics.DestroyAPIView):
 def complete_leaving(request, leave_id):
     try:
         leave_request = Leave.objects.get(id=leave_id, student=request.user)
-        if leave_request.is_approved:
-            # 将假条存储到LeaveStub类中
-            LeaveStub.objects.create(
-                student=leave_request.student,
-                name=leave_request.name,
-                class_name=leave_request.class_name,
-                start_date=leave_request.start_date,
-                end_date=leave_request.end_date,
-                reason=leave_request.reason,
-                leave_time=leave_request.leave_time,
-                is_approved=leave_request.is_approved
-            )
-            # 删除原假条
-            leave_request.delete()
+        if leave_request.status == 1:
+            leave_request.status = 3
             return Response(
                 {'status': 'Leave completed and stored successfully'},
                 status=status.HTTP_200_OK
@@ -206,52 +158,44 @@ def reject_leave(request, leave_id):
         return Response({'error': 'Leave not found'}, status=status.HTTP_404_NOT_FOUND)
     
     if request.user.is_superuser:  # 确保是管理员
-        # 将假条存储到 RejectedLeave 类中
-        RejectedLeave.objects.create(
-            student=leave.student,
-            name=leave.name,
-            class_name=leave.class_name,
-            start_date=leave.start_date,
-            end_date=leave.end_date,
-            reason=leave.reason,
-            leave_time=leave.leave_time,
-            is_approved=False
-        )
-        # 删除原假条
-        leave.delete()
+        leave.status = 2 # 2表示已拒绝
         return Response({'status': 'Leave rejected'})
     return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
 
 
 # 学生用户查询自己被拒绝的请假条列表
 class RejectedLeaveListView(generics.ListAPIView):
-    serializer_class = RejectedLeaveSerializer
+    serializer_class = LeaveSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return RejectedLeave.objects.filter(student=self.request.user)
+        return Leave.objects.filter(student=self.request.user, status=2)
     
-# 管理员查询存根列表
+
+# 管理员查询已销假的请假记录
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def completed_leave_list(request):
     """
     管理员查看所有已销假的请假记录
     """
-    completed_leaves = LeaveStub.objects.all()
-    serializer = LeaveStubSerializer(completed_leaves, many=True)
+    completed_leaves = Leave.objects.filter(status=3)
+    serializer = LeaveSerializer(completed_leaves, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 # 管理员查询拒绝列表
+# 管理员查询已销假的请假记录
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
-def rejected_leave_list(request):
+def completed_leave_list(request):
     """
-    管理员查看所有被拒绝的请假记录
+    管理员查看所有已销假的请假记录
     """
-    rejected_leaves = RejectedLeave.objects.all()
-    serializer = RejectedLeaveSerializer(rejected_leaves, many=True)
+    completed_leaves = Leave.objects.filter(status=2)
+    serializer = LeaveSerializer(completed_leaves, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 # 学生查看已经销假的列表
 @api_view(['GET'])
@@ -260,6 +204,6 @@ def view_completed_leave_list(request):
     """
     学生查看已销假的请假记录
     """
-    completed_leaves = LeaveStub.objects.filter(student=request.user)
-    serializer = LeaveStubSerializer(completed_leaves, many=True)
+    completed_leaves = Leave.objects.filter(student=request.user, status=3)
+    serializer = LeaveSerializer(completed_leaves, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
