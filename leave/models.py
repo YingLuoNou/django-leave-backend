@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.contrib.auth.models import User
 class Leave(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE)  # 学生账号
     name = models.CharField(max_length=100)
@@ -10,7 +10,7 @@ class Leave(models.Model):
     reason = models.TextField()  # 请假理由
     leave_time = models.DateTimeField(auto_now_add=True)  # 请假申请时间
     status = models.IntegerField(default=0)  #状态机
-
+    approver = models.TextField(blank=True) # 批准人
     def __str__(self):
         return f'{self.name} - {self.class_name} - {self.reason}'
 """
@@ -22,10 +22,52 @@ class Leave(models.Model):
  1:已批准
  2:已驳回
  3:已销假
-
+ 4:待审核
+ 5:已审核
+ 
  不得不承认，脑子不清晰的时候，不要上来就写写写，要先想清楚再写
  要修改的地方
  1.请假的方法都要改
  2.查表的方法也要改
 
  """
+"""
+使用多表继承（Multi-Table Inheritance），为每个用户组创建独立的 Profile 模型。
+"""
+# 基类
+class BaseProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return f'{self.user}的详细信息'
+
+# leave/models.py
+
+class StudentProfile(BaseProfile):
+    assigned_class = models.ForeignKey('Class', on_delete=models.SET_NULL, null=True, blank=True,
+                                       related_name='students')
+    def __str__(self):
+        return f"{self.user.username} 的学生配置文件"
+
+
+class TeacherProfile(BaseProfile):
+    department = models.CharField(max_length=100, null=True, blank=True)
+    # 其他教师特有字段
+    # 如：
+    # office_number = models.CharField(max_length=50, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.username} 的教师配置文件"
+
+
+# leave/models.py
+
+class Class(models.Model):
+    name = models.CharField(max_length=100, unique=True)  # 班级名称，如 "电气2304"
+    teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='classes')
+    description = models.TextField(null=True, blank=True)  # 班级描述
+
+    def __str__(self):
+        return self.name

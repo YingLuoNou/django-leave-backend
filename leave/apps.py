@@ -1,6 +1,12 @@
 from django.apps import AppConfig
+# leave/apps.py
 
+from django.apps import AppConfig
 
 class LeaveConfig(AppConfig):
-    default_auto_field = "django.db.models.BigAutoField"
-    name = "leave"
+    name = 'leave'
+
+    def ready(self):
+        import leave.signals  # 导入信号处理器
+
+

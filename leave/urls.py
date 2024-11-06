@@ -15,7 +15,7 @@ from .views import view_completed_leave_list
 urlpatterns = [
     path('request-leave/', request_leave, name='request_leave'),#请假
     path('view-leave/', view_leave_status, name='view_leave_status'),#查看请假状态
-    path('approve-leave/<int:leave_id>/', approve_leave, name='approve_leave'),#批准请假
+    path('admin/approve-leave/<int:leave_id>/', approve_leave, name='approve_leave'),#批准请假
     path('register/', RegisterView.as_view(), name='register'),#注册
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),#登录（内置函数）
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
