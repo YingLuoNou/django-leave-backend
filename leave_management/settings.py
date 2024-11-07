@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -43,25 +44,6 @@ INSTALLED_APPS = [
     'leave', 
 ]
 
-# 配置JWT认证
-'''
-请注意
-如果你使用第一个REST_FRAMEWORK 那么将使用token认证
-如果你使用第二个REST_FRAMEWORK 那么将使用JWT认证
-如果你使用了错误的配置将会返回401错误
-"Authentication credentials were not provided." 
-这里我决定使用jwt认证
-'''
-
-# REST_FRAMEWORK = {
-#     'DEFAULT_AUTHENTICATION_CLASSES': [
-#         'rest_framework.authentication.TokenAuthentication',
-#         'rest_framework.authentication.SessionAuthentication',
-#     ],
-#     'DEFAULT_PERMISSION_CLASSES': [
-#         'rest_framework.permissions.IsAuthenticated',
-#     ],
-# }
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

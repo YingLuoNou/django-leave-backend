@@ -1,6 +1,4 @@
-Django>=3.2,<4.0
-djangorestframework>=3.12,<4.0
-psycopg2>=2.8,<3.0  # 如果使用PostgreSQL数据库
-mysqlclient>=2.0,<3.0  # 如果使用MySQL数据库
-pillow>=8.0,<9.0  # 如果处理图像
-django-cors-headers>=3.7,<4.0  # 如果需要处理跨域请求
+Django
+djangorestframework
+djangorestframework-simplejwt
+# use Python 3.12.4

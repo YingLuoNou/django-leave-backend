@@ -1,24 +1,26 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth.models import User
+
+        
 class Leave(models.Model):
-    student = models.ForeignKey(User, on_delete=models.CASCADE)  # 学生账号
-    name = models.CharField(max_length=100)
-    class_name = models.CharField(max_length=100)  # 班级
+    student = models.ForeignKey(User, on_delete=models.CASCADE)  # 学号
     start_date = models.DateTimeField()  # 请假开始时间
     end_date = models.DateTimeField()  # 请假结束时间
     reason = models.TextField()  # 请假理由
     leave_time = models.DateTimeField(auto_now_add=True)  # 请假申请时间
     status = models.IntegerField(default=0)  #状态机
-    approver = models.TextField(blank=True) # 批准人
+    approver = models.TextField(blank=True)  # 批准人
+
     def __str__(self):
-        return f'{self.name} - {self.class_name} - {self.reason}'
+        return f'{self.student.last_name} - {self.student.class_set.first().name} - {self.reason}'
+
 """
 重构数据库日志：
 把数据表缩小为一个
  使用状态机
  状态机的状态：
- 0:未批准
+ 0:未批准   
  1:已批准
  2:已驳回
  3:已销假
@@ -36,7 +38,7 @@ class Leave(models.Model):
 """
 # 基类
 class BaseProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE,db_index=True)
     class Meta:
         abstract = True
 
@@ -49,7 +51,7 @@ class StudentProfile(BaseProfile):
     assigned_class = models.ForeignKey('Class', on_delete=models.SET_NULL, null=True, blank=True,
                                        related_name='students')
     def __str__(self):
-        return f"{self.user.username} 的学生配置文件"
+        return f"{self.user.username} 的学生信息"
 
 
 class TeacherProfile(BaseProfile):
@@ -59,14 +61,14 @@ class TeacherProfile(BaseProfile):
     # office_number = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user.username} 的教师配置文件"
+        return f"{self.user.username} 的教师信息"
 
 
 # leave/models.py
 
 class Class(models.Model):
     name = models.CharField(max_length=100, unique=True)  # 班级名称，如 "电气2304"
-    teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='classes')
+    teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='classes') # 外键关联教师
     description = models.TextField(null=True, blank=True)  # 班级描述
 
     def __str__(self):
