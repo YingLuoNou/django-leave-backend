@@ -96,14 +96,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(read_only=True)
     last_name = serializers.CharField(read_only=True)
     first_name = serializers.CharField(read_only=True)
+    user_group = serializers.SerializerMethodField()
     # 如果有其他字段需要包含，可以在这里添加
 
     class Meta:
         model = User
-        fields = ['student_number', 'first_name', 'last_name', 'email', 'class_name']
+        fields = ['student_number', 'first_name', 'last_name', 'email', 'class_name','user_group']
 
     def get_class_name(self, obj):
         try:
             return obj.studentprofile.assigned_class.name
         except AttributeError:
             return None
+    
+    def get_user_group(self, obj):
+        return obj.groups.first().name if obj.groups.first() else None

@@ -1,7 +1,7 @@
 # leave/urls.py
 
 from django.urls import include, path
-from .views import request_leave, view_leave_status, approve_leave
+from .views import request_leave, approve_leave
 from .views import RegisterView
 from .views import AdminLeaveListView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView

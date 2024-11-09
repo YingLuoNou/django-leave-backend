@@ -10,7 +10,8 @@ class Leave(models.Model):
     reason = models.TextField()  # 请假理由
     leave_time = models.DateTimeField(auto_now_add=True)  # 请假申请时间
     status = models.IntegerField(default=0)  #状态机
-    approver = models.TextField(blank=True)  # 批准人
+    approver = models.TextField(blank=True)  # 批准人（操作人）批准/拒绝/销假
+
 
     def __str__(self):
         return f'{self.student.last_name} - {self.student.class_set.first().name} - {self.reason}'
