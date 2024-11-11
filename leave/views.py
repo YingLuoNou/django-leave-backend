@@ -54,8 +54,6 @@ def approve_leave(request, leave_id):
         leave = Leave.objects.get(id=leave_id)
     except Leave.DoesNotExist:
         return Response({'error': 'Leave not found'}, status=status.HTTP_404_NOT_FOUND)
-    
-
     leave.status = 1 # 1表示已批准
     leave.approver = request.user.last_name
     leave.save()
