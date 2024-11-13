@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import os
 import django
 import pandas as pd
@@ -15,7 +17,6 @@ from leave.models import Class  # 确保这个模型的路径是正确的
 def import_teachers_from_xlsx(xlsx_file):
     # 读取教师 XLSX 文件的函数实现...
     print(f"正在导入教师数据：{xlsx_file}")
-
 def import_classes_from_xlsx(xlsx_file):
     # 读取班级 XLSX 文件的函数实现...
     print(f"正在导入班级数据：{xlsx_file}")
