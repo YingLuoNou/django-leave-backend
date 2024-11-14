@@ -78,9 +78,9 @@ class LeaveSerializer(serializers.ModelSerializer):
             if delta >= 7:
                 leave_instance.status = 4  # 时间多于7天，需要二重审批
             elif 3 <= delta <= 6:
-                leave_instance.status = 2  # 假设 2 表示需要协商
+                leave_instance.status = 0  # 假设 2 表示需要协商
             elif 1 <= delta <= 2:
-                leave_instance.status = 1  # 假设 1 表示快速审核
+                leave_instance.status = 0  # 假设 1 表示快速审核
             else:
                 leave_instance.status = 0  # 默认状态
 
