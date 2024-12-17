@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
-
+import os
 CSRF_TRUSTED_ORIGINS = ['https://sdut.ehzsy.online','https://*.127.0.0.1']
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -146,4 +146,6 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
+STATIC_ROOT = '/var/www/django/static/'
+
 CORS_ALLOW_HEADERS = ('*')

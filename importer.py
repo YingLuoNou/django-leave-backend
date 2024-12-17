@@ -35,11 +35,11 @@ def import_teachers_from_xlsx(xlsx_file):
     tch_group, _ = Group.objects.get_or_create(name='tch')
 
     # 默认密码
-    default_password = 'tch_b8j5h'
+    default_password = 'Sdutee_tch_b8j5h'
 
     # 遍历每一行数据并创建教师用户
     for index, row in df.iterrows():
-        username = str(row['工号']).strip()
+        username = str(row['工号']).strip().zfill(5)
         last_name = str(row['姓名']).strip()
         # email = str(row.get('电子邮箱', '')).strip()
         # department = str(row.get('部门', '')).strip()  # 获取部门信息
@@ -49,14 +49,13 @@ def import_teachers_from_xlsx(xlsx_file):
                 username=username,
                 password=default_password,
                 last_name=last_name,
-                email=email,
+               # email=email,
                 is_active=True,
             )
             # 将用户添加到 'tch' 组
             user.groups.add(tch_group)
             # 通过信号自动创建 TeacherProfile
             if hasattr(user, 'teacherprofile'):
-                user.teacherprofile.department = department
                 user.teacherprofile.save()
 
             print(f"成功创建教师用户: {username}")
