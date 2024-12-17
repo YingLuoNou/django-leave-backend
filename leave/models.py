@@ -11,7 +11,8 @@ class Leave(models.Model):
     leave_time = models.DateTimeField(auto_now_add=True)  # 请假申请时间
     status = models.IntegerField(default=0)  #状态机
     approver = models.TextField(blank=True)  # 批准人（操作人）批准/拒绝/销假
-
+    advisor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='leaves_advised', limit_choices_to={'groups__name': 'tch'})  # 新增字段：带班辅导员
+    
 
     def __str__(self):
         return f'{self.student.last_name} - {self.student.class_set.first().name} - {self.reason}'
@@ -51,6 +52,8 @@ class BaseProfile(models.Model):
 class StudentProfile(BaseProfile):
     assigned_class = models.ForeignKey('Class', on_delete=models.SET_NULL, null=True, blank=True,
                                        related_name='students')
+    advisor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='students', limit_choices_to={'groups__name': 'tch'})  # 关联辅导员，且只选择 'tch' 组的教师
+
     def __str__(self):
         return f"{self.user.username} 的学生信息"
 

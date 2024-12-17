@@ -151,18 +151,59 @@ def complete_leaving(request, leave_id):
 
 
 
-# 管理员/教师查看所有请假条
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth.models import Group
+from leave.models import Leave
+from leave.serializers import LeaveSerializer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
+
+# 自定义装饰器用于权限检查
+def group_required(*group_names):
+    def decorator(view_func):
+        def _wrapped_view(request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                return Response({'detail': 'Authentication credentials were not provided.'}, status=status.HTTP_401_UNAUTHORIZED)
+            if not request.user.groups.filter(name__in=group_names).exists():
+                return Response({'detail': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+            return view_func(request, *args, **kwargs)
+        return _wrapped_view
+    return decorator
+
 @api_view(['GET'])
-@group_required('admin','tch')
+@permission_classes([IsAuthenticated])
+@group_required('admin', 'tch', 'mas')  # 包含 'mas' 组
 def AdminLeaveListView(request):
     """
-    管理员查看所有请假记录
+    管理员或教师查看请假记录。
+    - 'admin' 用户查看所有请假记录。
+    - 'tch' 用户查看自己学生的请假记录。
+    - 'mas' 用户（可能也是 'tch'）查看所有请假记录。
     """
-    all_leaves = Leave.objects.all()
-    serializer = LeaveSerializer(all_leaves, many=True)
+    user = request.user
+
+    # 检查是否属于 'mas' 组
+    is_mas = user.groups.filter(name='mas').exists()
+    
+    if user.groups.filter(name='admin').exists() or is_mas:
+        # 管理员或 'mas' 用户查看所有请假记录
+        leaves = Leave.objects.all()
+    elif user.groups.filter(name='tch').exists():
+        # 'tch' 用户查看自己学生的请假记录
+        # 获取该教师的所有学生
+        students = user.students.all().values_list('user', flat=True)
+        leaves = Leave.objects.filter(student__in=students)
+    else:
+        # 其他用户不允许访问
+        return Response({'detail': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+    
+    serializer = LeaveSerializer(leaves, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-# views.py
+
+
 
 
 @api_view(['GET'])

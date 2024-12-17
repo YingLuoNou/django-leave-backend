@@ -1,35 +1,29 @@
-# leave/serializers.py
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from django.contrib.auth import get_user_model
-from .models import Leave, StudentProfile
-
-
-User = get_user_model()
-from datetime import datetime
-from rest_framework import serializers
-
+from .models import Leave, StudentProfile, Class
 
 class LeaveSerializer(serializers.ModelSerializer):
     # 原有字段
     student = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    class_name = serializers.ReadOnlyField()
+    class_name = serializers.ReadOnlyField(source='student.studentprofile.assigned_class.name')
     
     # 新增字段
     student_number = serializers.SerializerMethodField()
     student_name = serializers.SerializerMethodField()
     student_class = serializers.SerializerMethodField()
     student_email = serializers.EmailField(source='student.email', read_only=True)
-    
+    advisor_name = serializers.SerializerMethodField()  # 新增字段：辅导员姓名
+
     class Meta:
         model = Leave
         fields = [
             'id', 'student', 'class_name', 'start_date', 'end_date', 'reason',
             'leave_time', 'status', 'approver',
-            'student_number', 'student_name', 'student_class', 'student_email'
+            'student_number', 'student_name', 'student_class', 'student_email',
+            'advisor', 'advisor_name'  # 新增字段
         ]
         read_only_fields = [
-            'student_number', 'student_name', 'student_class', 'student_email'
+            'student_number', 'student_name', 'student_class', 'student_email', 'advisor_name'
         ]
     
     def get_student_number(self, obj):
@@ -43,7 +37,12 @@ class LeaveSerializer(serializers.ModelSerializer):
             return obj.student.studentprofile.assigned_class.name
         except AttributeError:
             return None  # 若未设置班级，返回 None
-    
+
+    def get_advisor_name(self, obj):
+        if obj.advisor:
+            return obj.advisor.last_name  # 使用 last_name 作为辅导员姓名
+        return None
+
     def validate(self, attrs):
         """
         验证结束日期不早于开始日期。
@@ -57,7 +56,7 @@ class LeaveSerializer(serializers.ModelSerializer):
             })
         
         return attrs
-    
+
     def create(self, validated_data):
         # 保持原有的 create 方法
         validated_data['student'] = self.context['request'].user
@@ -65,8 +64,13 @@ class LeaveSerializer(serializers.ModelSerializer):
         # 获取 student 的 class_name
         if hasattr(validated_data['student'], 'studentprofile') and validated_data['student'].studentprofile.assigned_class:
             assigned_class = validated_data['student'].studentprofile.assigned_class
-            leave_instance = Leave.objects.create(**validated_data)  # 不包含 class_name
+            leave_instance = Leave.objects.create(**validated_data)
             leave_instance.class_name = assigned_class.name  # 手动设置 class_name
+            
+            # 设置辅导员
+            advisor = validated_data['student'].studentprofile.advisor
+            leave_instance.advisor = advisor
+            leave_instance.save()
             
             # 计算请假天数
             start_date = leave_instance.start_date
@@ -89,12 +93,7 @@ class LeaveSerializer(serializers.ModelSerializer):
         else:
             raise serializers.ValidationError("User profile or assigned class is not set.")
 
-
-# serializers.py
-from rest_framework import serializers
-from django.contrib.auth.models import User
-from .models import StudentProfile, Class
-
+# 其他序列化器保持不变
 class UserRegisterSerializer(serializers.ModelSerializer):
     class_name = serializers.CharField(write_only=True)  # 添加班级字段
 
@@ -121,7 +120,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Class with this name does not exist.")
         
         return user
-
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class_name = serializers.SerializerMethodField()
