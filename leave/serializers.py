@@ -142,3 +142,33 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
     def get_user_group(self, obj):
         return obj.groups.first().name if obj.groups.first() else None
+
+# leave/serializers.py
+
+from rest_framework import serializers
+from django.contrib.auth.models import User
+
+class ChangePasswordSerializer(serializers.Serializer):
+    currentPassword = serializers.CharField(required=True, write_only=True, style={'input_type': 'password'})
+    newPassword = serializers.CharField(required=True, write_only=True, style={'input_type': 'password'})
+    # confirmNewPassword = serializers.CharField(required=True, write_only=True, style={'input_type': 'password'})
+
+    def validate_currentPassword(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError("当前密码不正确。")
+        return value
+
+
+    def validate_newPassword(self, value):
+        # 添加密码复杂性验证（可根据需求扩展）
+        if len(value) < 6:
+            raise serializers.ValidationError("新密码至少需要6个字符。")
+        # 可以添加更多复杂性要求，例如包含数字、字母等
+        return value
+
+    def save(self, **kwargs):
+        user = self.context['request'].user
+        user.set_password(self.validated_data['newPassword'])
+        user.save()
+        return user

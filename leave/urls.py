@@ -9,7 +9,7 @@ from .views import cancel_leave
 from .views import UserInfoView
 from .views import reject_leave
 from .views import complete_leaving
-from .views import get_student_leaves
+from .views import get_student_leaves,ChangePasswordView
 urlpatterns = [
     path('request-leave/', request_leave, name='request_leave'),#请假
     path('view-leave/', get_student_leaves, name='view_leave_status'),#查看请假状态
@@ -23,5 +23,6 @@ urlpatterns = [
     path('UserInfoView/', UserInfoView, name='UserInfoView'),#查看用户信息
     path('admin/reject-leave/<int:leave_id>/', reject_leave, name='rejected_leave'),#拒绝请假
     path('CompleteLeavingView/<int:leave_id>/', complete_leaving, name='CompleteLeavingView'),#完成请假(销假)
+    path('change-password/', ChangePasswordView.as_view(), name='change-password'),
 ]
 
