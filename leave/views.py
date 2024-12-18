@@ -51,13 +51,40 @@ def request_leave(request):
 
 # 管理员批准请假
 @api_view(['PATCH'])
-@group_required('admin','tch')
+@group_required('admin','tch','mas')
 def approve_leave(request, leave_id):
     try:
         leave = Leave.objects.get(id=leave_id)
     except Leave.DoesNotExist:
         return Response({'error': 'Leave not found'}, status=status.HTTP_404_NOT_FOUND)
     leave.status = 1 # 1表示已批准
+    leave.approver = request.user.last_name
+    leave.save()
+    return Response({'status': 'Leave approved'})
+
+
+# tch初审批准请假
+@api_view(['PATCH'])
+@group_required('admin','tch')
+def pre_approve_leave(request, leave_id):
+    try:
+        leave = Leave.objects.get(id=leave_id)
+    except Leave.DoesNotExist:
+        return Response({'error': 'Leave not found'}, status=status.HTTP_404_NOT_FOUND)
+    leave.status = 5 # 5表示初审批准
+    leave.approver = request.user.last_name
+    leave.save()
+    return Response({'status': 'Leave approved'})
+
+# mas批准长假期
+@api_view(['PATCH'])
+@group_required('admin','tch')
+def mas_approve_leave(request, leave_id):
+    try:
+        leave = Leave.objects.get(id=leave_id)
+    except Leave.DoesNotExist:
+        return Response({'error': 'Leave not found'}, status=status.HTTP_404_NOT_FOUND)
+    leave.status = 1 # 1；已经批准
     leave.approver = request.user.last_name
     leave.save()
     return Response({'status': 'Leave approved'})
@@ -123,7 +150,7 @@ def UserInfoView(request):
 # 管理员拒绝请假
 
 @api_view(['POST'])
-@group_required('admin', 'tch')
+@group_required('admin', 'tch','mas')
 def reject_leave(request, leave_id):
     try:
         leave = Leave.objects.get(id=leave_id)
