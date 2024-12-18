@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Leave, StudentProfile, Class
+import pytz
+from datetime import datetime
+
 
 class LeaveSerializer(serializers.ModelSerializer):
     # 原有字段
@@ -13,6 +16,11 @@ class LeaveSerializer(serializers.ModelSerializer):
     student_class = serializers.SerializerMethodField()
     student_email = serializers.EmailField(source='student.email', read_only=True)
     advisor_name = serializers.SerializerMethodField()  # 新增字段：辅导员姓名
+    leave_time = serializers.ReadOnlyField()  # 请假时间
+    reject_reason = serializers.CharField(
+    required=False,
+)  # 拒绝理由是可选的
+
 
     class Meta:
         model = Leave
@@ -20,7 +28,7 @@ class LeaveSerializer(serializers.ModelSerializer):
             'id', 'student', 'class_name', 'start_date', 'end_date', 'reason',
             'leave_time', 'status', 'approver',
             'student_number', 'student_name', 'student_class', 'student_email',
-            'advisor', 'advisor_name'  # 新增字段
+            'advisor', 'advisor_name','reject_reason'  # 新增字段
         ]
         read_only_fields = [
             'student_number', 'student_name', 'student_class', 'student_email', 'advisor_name'
@@ -42,6 +50,8 @@ class LeaveSerializer(serializers.ModelSerializer):
         if obj.advisor:
             return obj.advisor.last_name  # 使用 last_name 作为辅导员姓名
         return None
+
+    
 
     def validate(self, attrs):
         """

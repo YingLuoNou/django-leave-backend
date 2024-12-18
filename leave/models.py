@@ -12,7 +12,8 @@ class Leave(models.Model):
     status = models.IntegerField(default=0)  #状态机
     approver = models.TextField(blank=True)  # 批准人（操作人）批准/拒绝/销假
     advisor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='leaves_advised', limit_choices_to={'groups__name': 'tch'})  # 新增字段：带班辅导员
-    
+    reject_reason = models.CharField(max_length=255, null=True, blank=True)  # 拒绝理由
+
 
     def __str__(self):
         return f'{self.student.last_name} - {self.student.class_set.first().name} - {self.reason}'

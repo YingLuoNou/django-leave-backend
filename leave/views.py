@@ -32,13 +32,16 @@ class RegisterView(APIView):
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+from django.utils import timezone
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])  # 确保用户已认证
 def request_leave(request):
     """
     学生提交请假申请。
     """
+    data = request.data.copy() 
+    data['leave_time'] = timezone.now()
+
     serializer = LeaveSerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
         serializer.save()  # `student` 和 `class_name` 将自动设置
@@ -118,20 +121,29 @@ def UserInfoView(request):
 
 
 # 管理员拒绝请假
-@api_view(['PATCH'])
-@group_required('admin','tch')
+
+@api_view(['POST'])
+@group_required('admin', 'tch')
 def reject_leave(request, leave_id):
     try:
         leave = Leave.objects.get(id=leave_id)
     except Leave.DoesNotExist:
         return Response({'error': 'Leave not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    reject_reason = request.data.get('reject_reason', None)  # 获取拒绝理由
+
+    # 如果有拒绝理由，则保存
+    if reject_reason:
+        leave.reject_reason = reject_reason
+
     if leave.status == 0 or leave.status == 4:
-        leave.status = 2 # 2表示已拒绝
+        leave.status = 2  # 2表示已拒绝
         leave.approver = request.user.last_name
         leave.save()
         return Response({'status': 'Leave rejected'})
     else:
         return Response({'error': 'Only pending leaves can be rejected'}, status=status.HTTP_400_BAD_REQUEST)
+    
 
 # 管理员/tch销假
 @api_view(['PATCH'])
