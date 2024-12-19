@@ -264,6 +264,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .serializers import ChangePasswordSerializer
 
+
+
 class ChangePasswordView(APIView):
     """
     允许普通用户修改自己的密码。
