@@ -11,7 +11,6 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import AllowAny
 from rest_framework import generics, status
-from rest_framework import status
 from .models import Leave
 from .serializers import UserProfileSerializer
 from .decorators import group_required
@@ -198,6 +197,7 @@ from leave.models import Leave
 from leave.serializers import LeaveSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
+# from django.core.paginator import Paginator
 
 # 自定义装饰器用于权限检查
 def group_required(*group_names):
@@ -210,6 +210,7 @@ def group_required(*group_names):
             return view_func(request, *args, **kwargs)
         return _wrapped_view
     return decorator
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -229,6 +230,11 @@ def AdminLeaveListView(request):
     if user.groups.filter(name='admin').exists() or is_mas:
         # 管理员或 'mas' 用户查看所有请假记录
         leaves = Leave.objects.all()
+        # paginator = Paginator(leaves, 10)
+        # page_number = request.GET.get('page')  # 获取当前页码
+        # page_obj = paginator.get_page(page_number)  # 获取分页对象
+        
+
     elif user.groups.filter(name='tch').exists():
         # 'tch' 用户查看自己学生的请假记录
         # 获取该教师的所有学生
