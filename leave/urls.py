@@ -1,30 +1,44 @@
 # leave/urls.py
 
-from django.urls import include, path
-from .views import request_leave, approve_leave
-from .views import RegisterView
-from .views import AdminLeaveListView
+from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .views import cancel_leave
-from .views import UserInfoView
-from .views import reject_leave
-from .views import complete_leaving
-from .views import get_student_leaves,ChangePasswordView,pre_approve_leave,mas_approve_leave
-urlpatterns = [
-    path('request-leave/', request_leave, name='request_leave'),#请假
-    path('view-leave/', get_student_leaves, name='view_leave_status'),#查看请假状态
-    path('admin/approve-leave/<int:leave_id>/', approve_leave, name='approve_leave'),#批准请假
-    path('register/', RegisterView.as_view(), name='register'),#注册
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),#登录（内置函数）
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('admin/leaves/', AdminLeaveListView, name='admin_leave_list'),
-    path('admin/leaves/approve/<int:leave_id>/', AdminLeaveListView, name='approve_leave'),
-    path('cancel-leave/<int:leave_id>/', cancel_leave, name='cancel_leave'),#取消请假
-    path('UserInfoView/', UserInfoView, name='UserInfoView'),#查看用户信息
-    path('admin/reject-leave/<int:leave_id>/', reject_leave, name='rejected_leave'),#拒绝请假
-    path('CompleteLeavingView/<int:leave_id>/', complete_leaving, name='CompleteLeavingView'),#完成请假(销假)
-    path('change-password/', ChangePasswordView.as_view(), name='change-password'),
-    path('pre_approve_leave/<int:leave_id>/', pre_approve_leave, name='pre_approve_leave'),
-    path('mas_approve_leave/<int:leave_id>/', mas_approve_leave, name='mas_approve_leave'),
-]
+from .views import (
+    RegisterView,
+    request_leave,
+    get_student_leaves,
+    cancel_leave,
+    UserInfoView,
+    ChangePasswordView,
+    AdminLeaveListView,
+    approve_leave,
+    pre_approve_leave,
+    mas_approve_leave,
+    reject_leave,
+    complete_leaving,
+)
 
+urlpatterns = [
+    # 注册与登录
+    path('register/', RegisterView.as_view(), name='register'),
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    # 学生接口
+    path('request-leave/', request_leave, name='request_leave'),               # 提交请假
+    path('view-leave/', get_student_leaves, name='view_leave_status'),         # 学生查看请假（分页可选）
+    path('cancel-leave/<int:leave_id>/', cancel_leave, name='cancel_leave'),   # 取消请假
+
+    # 用户信息接口（旧路由和新路由同时保留）
+    path('UserInfoView/', UserInfoView, name='UserInfoView'),                  # 旧路由，兼容前端未改动
+    path('user-info/', UserInfoView, name='user_info'),                        # 新路由，推荐使用
+
+    path('change-password/', ChangePasswordView.as_view(), name='change_password'),
+
+    # 管理员/教师/mas 接口
+    path('admin/leaves/', AdminLeaveListView, name='admin_leave_list'),                             # 分页查看请假列表
+    path('admin/approve-leave/<int:leave_id>/', approve_leave, name='approve_leave'),                # 批准请假
+    path('admin/pre-approve-leave/<int:leave_id>/', pre_approve_leave, name='pre_approve_leave'),    # 初审批准
+    path('admin/mas-approve-leave/<int:leave_id>/', mas_approve_leave, name='mas_approve_leave'),    # mas 批准长假
+    path('admin/reject-leave/<int:leave_id>/', reject_leave, name='reject_leave'),                  # 拒绝请假
+    path('admin/complete-leave/<int:leave_id>/', complete_leaving, name='complete_leave'),          # 销假
+]

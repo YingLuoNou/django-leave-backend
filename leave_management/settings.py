@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'leave', 
+    'django_filters',
 ]
 
 
@@ -53,6 +54,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    # 全局分页类，默认 page_size 可被单个 ViewSet 覆盖
+     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+     'PAGE_SIZE': 10,
+
+     # 允许 filter_backends 使用 django-filter
+     'DEFAULT_FILTER_BACKENDS': [
+         'django_filters.rest_framework.DjangoFilterBackend'
+     ],
 }
 
 # 配置JWT过期时间等参数

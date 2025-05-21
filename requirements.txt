@@ -4,4 +4,5 @@ djangorestframework-simplejwt
 pandas
 django-cors-headers
 openpyxl
+django-filter
 # use Python 3.12.4
