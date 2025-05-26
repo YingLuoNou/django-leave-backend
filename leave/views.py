@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Leave
+from .models import Leave , Class
 from .serializers import (
     LeaveSerializer,
     UserRegisterSerializer,
@@ -100,19 +100,26 @@ def add_student(request):
             {"class_name": "此字段为必填。"},
             status=status.HTTP_400_BAD_REQUEST
         )
-    # 2. 判断角色
+    
+    matching_classes = Class.objects.filter(name=class_name)
+    print(f"[DEBUG] 找到 {matching_classes.count()} 个 name='{class_name}' 的 Class：")
+    for cls in matching_classes:
+        print(f"    id={cls.id}, name={cls.name}, teacher_id={cls.teacher_id}, teacher_last={getattr(cls.teacher, 'last_name', None)}")
+
+    
+    #2. 判断角色
     is_admin = user.groups.filter(name__in=['admin', 'mas']).exists()
     if not is_admin:
-        # “tch” 组的老师只能给自己负责的班级添加学生
         manages = Class.objects.filter(
-            name=class_name,
-            teacher=user
-        ).exists()
+                name=class_name,
+                teacher=user        # 直接用 teacher 外键等于当前用户
+            ).exists()
         if not manages:
-            return Response(
-                {"detail": "您只能向自己负责的班级添加学生。"},
-                status=status.HTTP_403_FORBIDDEN
-            )
+                return Response(
+                    {"detail": "您只能向自己负责的班级添加学生。"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
 
     # 3. 用 StudentCreateSerializer 来校验并创建
     serializer = StudentCreateSerializer(data=data, context={'request': request})
