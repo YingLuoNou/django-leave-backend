@@ -182,3 +182,66 @@ class ChangePasswordSerializer(serializers.Serializer):
         user.set_password(self.validated_data['newPassword'])
         user.save()
         return user
+
+#添加学生功能方面代码
+class StudentCreateSerializer(serializers.ModelSerializer):
+    """
+    为管理员(admin/mas) 或 辅导员(tch) 提供“添加学生”接口
+    """
+    # 前端必须提供
+    class_name         = serializers.CharField(write_only=True)
+    advisor_last_name = serializers.CharField(write_only=True)
+    password          = serializers.CharField(write_only=True, default='123456')
+
+    class Meta:
+        model  = User
+        fields = [
+            'username', 'password', 'last_name', 'email',
+            'class_name', 'advisor_last_name'
+        ]
+
+    def validate_username(self, value):
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("学号已存在。")
+        return value
+
+    def validate_class_name(self, value):
+        if not Class.objects.filter(name=value).exists():
+            raise serializers.ValidationError(f"班级 '{value}' 不存在。")
+        return value
+
+    def validate_advisor_last_name(self, value):
+        qs = User.objects.filter(last_name=value, groups__name='tch')
+        if not qs.exists():
+            raise serializers.ValidationError(f"辅导员 '{value}' 不存在或不属于 tch 组。")
+        return value
+
+    def create(self, validated_data):
+        with transaction.atomic():
+            # 1. 创建用户
+            user = User.objects.create_user(
+                username=validated_data['username'],
+                password=validated_data['password'],
+                last_name=validated_data['last_name'],
+                email=validated_data.get('email', ''),
+                is_active=True,
+            )
+            # 2. 加入 stu 组
+            stu_group, _ = Group.objects.get_or_create(name='stu')
+            user.groups.add(stu_group)
+
+            # 3. 查班级 和 辅导员
+            cls     = Class.objects.get(name=validated_data['class_name'])
+            advisor = User.objects.get(
+                last_name=validated_data['advisor_last_name'],
+                groups__name='tch'
+            )
+
+            # 4. 创建 StudentProfile
+            StudentProfile.objects.create(
+                user=user,
+                assigned_class=cls,
+                advisor=advisor
+            )
+
+            return user

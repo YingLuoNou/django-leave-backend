@@ -15,7 +15,8 @@ from .serializers import (
     LeaveSerializer,
     UserRegisterSerializer,
     UserProfileSerializer,
-    ChangePasswordSerializer
+    ChangePasswordSerializer,
+    StudentCreateSerializer
 )
 from .decorators import group_required
 
@@ -84,6 +85,18 @@ def AdminLeaveListView(request):
         'previous': page_obj.previous_page_number() if page_obj.has_previous() else None,
         'results': serializer.data,
     })
+
+#教师管理员添加学生
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@group_required('admin', 'tch', 'mas')
+def add_student(request):
+    data = request.data.copy()
+    user = request.user
+    
+    #根据是否是老师选择能添加班级的范围
+    if user.groups.filter(name__in=['admin', 'mas']).exists():
+        #管理员添加任意班级
 
 
 # 学生查询自己请假条（分页 + 按 status 可选）
