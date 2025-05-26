@@ -93,10 +93,37 @@ def AdminLeaveListView(request):
 def add_student(request):
     data = request.data.copy()
     user = request.user
-    
-    #根据是否是老师选择能添加班级的范围
-    if user.groups.filter(name__in=['admin', 'mas']).exists():
-        #管理员添加任意班级
+    # 1. 检查必须字段
+    class_name = data.get('class_name')
+    if not class_name:
+        return Response(
+            {"class_name": "此字段为必填。"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    # 2. 判断角色
+    is_admin = user.groups.filter(name__in=['admin', 'mas']).exists()
+    if not is_admin:
+        # “tch” 组的老师只能给自己负责的班级添加学生
+        manages = Class.objects.filter(
+            name=class_name,
+            teacher=user
+        ).exists()
+        if not manages:
+            return Response(
+                {"detail": "您只能向自己负责的班级添加学生。"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+    # 3. 用 StudentCreateSerializer 来校验并创建
+    serializer = StudentCreateSerializer(data=data, context={'request': request})
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    new_user = serializer.save()
+    return Response(
+        {"message": "学生创建成功。", "username": new_user.username},
+        status=status.HTTP_201_CREATED
+    )
 
 
 # 学生查询自己请假条（分页 + 按 status 可选）
