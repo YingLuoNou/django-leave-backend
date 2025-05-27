@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Leave , Class
+from .models import Leave , Class, StudentProfile
 from .serializers import (
     LeaveSerializer,
     UserRegisterSerializer,
@@ -22,7 +22,7 @@ from .serializers import (
 from .decorators import group_required
 
 
-# 学生注册
+####### 学生注册
 @permission_classes([AllowAny])
 class RegisterView(APIView):
     def post(self, request):
@@ -38,7 +38,7 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# 学生提交请假申请
+####### 学生提交请假申请
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def request_leave(request):
@@ -51,7 +51,7 @@ def request_leave(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# 管理员/教师/mas 查看请假条（分页 + 按 status 过滤）
+####### 管理员/教师/mas 查看请假条（分页 + 按 status 过滤）
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @group_required('admin', 'tch', 'mas')
@@ -87,7 +87,7 @@ def AdminLeaveListView(request):
         'results': serializer.data,
     })
 
-#教师管理员添加学生
+#######教师管理员添加学生
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @group_required('admin', 'tch', 'mas')
@@ -126,10 +126,10 @@ def add_student(request):
     )
 
 
-#教师管理员删除学生
+#######教师管理员删除学生
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-@group_required('admin', 'tch', 'mas')
+@group_required('admin', 'mas')
 def delete_student(request, username):
     """
     安全删除一个学生用户：
@@ -170,7 +170,8 @@ def delete_student(request, username):
         status=status.HTTP_200_OK
     )
 
-#获取学号对应学生信息
+
+#######获取学号对应学生信息
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @group_required('admin', 'tch', 'mas')
@@ -190,7 +191,86 @@ def get_student_info(request, username):
     serializer = UserProfileSerializer(target)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-# 学生查询自己请假条（分页 + 按 status 可选）
+####### 修改学生班级导员
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+@group_required('admin', 'tch', 'mas')
+def modify_student_profile(request, username):
+    """
+    修改学生的 assigned_class 和 advisor：
+    - admin/mas：可修改任意学生
+    - tch：只能修改自己辅导的学生
+    """
+    # 1. 找到目标用户
+    try:
+        target = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response({"detail": "学生不存在。"}, status=status.HTTP_404_NOT_FOUND)
+
+    # 2. 确保这是一个学生账号
+    if not target.groups.filter(name='stu').exists():
+        return Response({"detail": "目标不是学生账号。"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # 3. 权限校验
+    requester = request.user
+    is_admin = requester.groups.filter(name__in=['admin', 'mas']).exists()
+
+    if not is_admin:
+        # 仅允许修改自己辅导的学生
+        profile_qs = StudentProfile.objects.filter(user=target, advisor=requester)
+        if not profile_qs.exists():
+            return Response(
+                {"detail": "您只能修改自己辅导的学生信息。"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        profile = profile_qs.first()
+    else:
+        # 管理员直接拿到 profile
+        try:
+            profile = target.studentprofile
+        except StudentProfile.DoesNotExist:
+            return Response({"detail": "该学生还没有档案。"}, status=status.HTTP_400_BAD_REQUEST)
+    # 4. 读取并校验前端数据
+    data = request.data
+    new_class_name = data.get('class_name')
+    new_advisor_last = data.get('advisor_last_name')
+    # 修改班级
+    if new_class_name is not None:
+        try:
+            new_class = Class.objects.get(name=new_class_name)
+        except Class.DoesNotExist:
+            return Response(
+                {"class_name": f"班级 '{new_class_name}' 不存在。"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        profile.assigned_class = new_class
+    # 修改辅导员
+    if new_advisor_last is not None:
+        try:
+            new_adv = User.objects.get(last_name=new_advisor_last, groups__name='tch')
+        except User.DoesNotExist:
+            return Response(
+                {"advisor_last_name": f"辅导员 '{new_advisor_last}' 不存在或不属于 tch 组。"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        profile.advisor = new_adv
+    # 至少要有一个字段被修改
+    if new_class_name is None and new_advisor_last is None:
+        return Response(
+            {"detail": "请至少提供 class_name 或 advisor_last_name。"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    # 5. 保存并返回
+    profile.save()
+    return Response({
+        "detail": "学生信息更新成功。",
+        "username": target.username,
+        "class_name": profile.assigned_class.name if profile.assigned_class else None,
+        "advisor_last_name": profile.advisor.last_name if profile.advisor else None
+    }, status=status.HTTP_200_OK)
+
+
+####### 学生查询自己请假条（分页 + 按 status 可选）
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @group_required('stu')
@@ -216,7 +296,7 @@ def get_student_leaves(request):
     })
 
 
-# 管理员批准请假
+####### 管理员批准请假
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 @group_required('admin', 'tch', 'mas')
@@ -231,7 +311,7 @@ def approve_leave(request, leave_id):
     return Response({'status': 'Leave approved'})
 
 
-# tch 初审批准请假
+####### tch 初审批准请假
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 @group_required('admin', 'tch')
@@ -246,7 +326,7 @@ def pre_approve_leave(request, leave_id):
     return Response({'status': 'Leave pre-approved'})
 
 
-# mas 批准长假期
+####### mas 批准长假期
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 @group_required('admin', 'tch')
@@ -261,7 +341,7 @@ def mas_approve_leave(request, leave_id):
     return Response({'status': 'Long leave approved'})
 
 
-# 管理员拒绝请假
+####### 管理员拒绝请假
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @group_required('admin', 'tch', 'mas')
@@ -283,7 +363,7 @@ def reject_leave(request, leave_id):
     return Response({'error': 'Only pending leaves can be rejected'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# 管理员/tch 销假
+####### 管理员/tch 销假
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 @group_required('admin', 'tch')
@@ -299,7 +379,7 @@ def complete_leaving(request, leave_id):
     return Response({'error': 'Only approved leaves can be completed'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# 学生取消请假
+####### 学生取消请假
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def cancel_leave(request, leave_id):
@@ -314,7 +394,7 @@ def cancel_leave(request, leave_id):
     return Response({'message': 'Leave canceled'}, status=status.HTTP_200_OK)
 
 
-# 用户查询自己信息
+####### 用户查询自己信息
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def UserInfoView(request):
@@ -322,7 +402,7 @@ def UserInfoView(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# 修改密码
+####### 修改密码
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
