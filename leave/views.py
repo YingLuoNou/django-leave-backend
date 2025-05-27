@@ -170,6 +170,25 @@ def delete_student(request, username):
         status=status.HTTP_200_OK
     )
 
+#获取学号对应学生信息
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@group_required('admin', 'tch', 'mas')
+def get_student_info(request, username):
+    try:
+        target = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response(
+            {"detail": "找不到该学生。"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    if not target.groups.filter(name='stu').exists():
+        return Response(
+            {"detail": "仅能查询学生账号。"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    serializer = UserProfileSerializer(target)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 # 学生查询自己请假条（分页 + 按 status 可选）
 @api_view(['GET'])

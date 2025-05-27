@@ -17,6 +17,7 @@ from .views import (
     complete_leaving,
     add_student,
     delete_student,
+    get_student_info,
 )
 
 urlpatterns = [
@@ -39,7 +40,8 @@ urlpatterns = [
     # 管理员/教师/mas 接口
     path('admin/leaves/', AdminLeaveListView, name='admin_leave_list'),                             # 分页查看请假列表
     path('admin/students/add/', add_student, name='add-student'),                                  #教师管理员添加学生
-    path('admin/students/delete/<str:username>/', delete_student, name='delete-student'),         # 教师管理员删除学生
+    path('admin/students/delete/<str:username>/', delete_student, name='delete-student'),          #教师管理员删除学生
+    path('admin/students/check/<str:username>/', get_student_info, name='get_student_info'),         # 操作学生前查询学生信息以供确认
     path('admin/approve-leave/<int:leave_id>/', approve_leave, name='approve_leave'),                # 批准请假
     path('admin/pre-approve-leave/<int:leave_id>/', pre_approve_leave, name='pre_approve_leave'),    # 初审批准
     path('admin/mas-approve-leave/<int:leave_id>/', mas_approve_leave, name='mas_approve_leave'),    # mas 批准长假
