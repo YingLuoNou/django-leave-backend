@@ -2,6 +2,7 @@
 
 from django.utils import timezone
 from django.core.paginator import Paginator
+from django.contrib.auth.models import User 
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -122,6 +123,51 @@ def add_student(request):
     return Response(
         {"message": "学生创建成功。", "username": new_user.username},
         status=status.HTTP_201_CREATED
+    )
+
+
+#教师管理员删除学生
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@group_required('admin', 'tch', 'mas')
+def delete_student(request, username):
+    """
+    安全删除一个学生用户：
+    - admin/mas：可删除任意 stu 组用户
+    - tch：只能删除自己负责班级的学生
+    """
+    # 1. 获取目标用户
+    try:
+        target = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response(
+            {"detail": "找不到该学生。"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    # 2. 确认这是个学生账号
+    if not target.groups.filter(name='stu').exists():
+        return Response(
+            {"detail": "仅能删除学生账号。"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    # 3. 权限判断
+    requester = request.user
+    is_admin = requester.groups.filter(name__in=['admin', 'mas']).exists()
+
+    if not is_admin:
+        # 辅导员只能删除自己班级下的学生
+        profile = getattr(target, 'studentprofile', None)
+        if profile.advisor_id != requester.id:
+            return Response(
+                {"detail": "您只能删除自己负责班级的学生。"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+    # 4. 执行删除
+    target.delete()
+    return Response(
+        {"message": f"学生 {username} 已被删除。"},
+        status=status.HTTP_200_OK
     )
 
 
