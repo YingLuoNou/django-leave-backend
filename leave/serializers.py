@@ -1,8 +1,9 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from .models import Leave, StudentProfile, Class
 import pytz
 from datetime import datetime
+from django.db import transaction
 
 
 class LeaveSerializer(serializers.ModelSerializer):
@@ -237,11 +238,14 @@ class StudentCreateSerializer(serializers.ModelSerializer):
                 groups__name='tch'
             )
 
-            # 4. 创建 StudentProfile
-            StudentProfile.objects.create(
+             # 4. 创建或更新 StudentProfile
+            profile, created = StudentProfile.objects.get_or_create(
                 user=user,
-                assigned_class=cls,
-                advisor=advisor
+                defaults={'assigned_class': cls, 'advisor': advisor}
             )
+            if not created:
+                profile.assigned_class = cls
+                profile.advisor = advisor
+                profile.save()
 
             return user

@@ -91,8 +91,12 @@ def AdminLeaveListView(request):
 @permission_classes([IsAuthenticated])
 @group_required('admin', 'tch', 'mas')
 def add_student(request):
+    serializer = UserProfileSerializer(request.user)#获取导员id
+    Isuser = str(serializer.data['last_name'])
+    print(Isuser)
     data = request.data.copy()
     user = request.user
+    print(data['advisor_last_name'])
     # 1. 检查必须字段
     class_name = data.get('class_name')
     if not class_name:
@@ -100,27 +104,15 @@ def add_student(request):
             {"class_name": "此字段为必填。"},
             status=status.HTTP_400_BAD_REQUEST
         )
-    
-    matching_classes = Class.objects.filter(name=class_name)
-    print(f"[DEBUG] 找到 {matching_classes.count()} 个 name='{class_name}' 的 Class：")
-    for cls in matching_classes:
-        print(f"    id={cls.id}, name={cls.name}, teacher_id={cls.teacher_id}, teacher_last={getattr(cls.teacher, 'last_name', None)}")
-
-    
     #2. 判断角色
     is_admin = user.groups.filter(name__in=['admin', 'mas']).exists()
     if not is_admin:
-        manages = Class.objects.filter(
-                name=class_name,
-                teacher=user        # 直接用 teacher 外键等于当前用户
-            ).exists()
-        if not manages:
+        usertmp = str(data['advisor_last_name'])#获取请求的导员id
+        if not Isuser == usertmp:
                 return Response(
-                    {"detail": "您只能向自己负责的班级添加学生。"},
+                    {"detail": "您只能为自己添加学生。"},
                     status=status.HTTP_403_FORBIDDEN
                 )
-
-
     # 3. 用 StudentCreateSerializer 来校验并创建
     serializer = StudentCreateSerializer(data=data, context={'request': request})
     if not serializer.is_valid():
