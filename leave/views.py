@@ -87,17 +87,17 @@ def AdminLeaveListView(request):
         'results': serializer.data,
     })
 
-#######教师管理员添加学生
+####### 教师管理员添加学生
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @group_required('admin', 'tch', 'mas')
 def add_student(request):
     serializer = UserProfileSerializer(request.user)#获取导员id
     Isuser = str(serializer.data['last_name'])
-    print(Isuser)
+    #print(Isuser)
     data = request.data.copy()
     user = request.user
-    print(data['advisor_last_name'])
+    #print(data['advisor_last_name'])
     # 1. 检查必须字段
     class_name = data.get('class_name')
     if not class_name:
@@ -126,7 +126,7 @@ def add_student(request):
     )
 
 
-#######教师管理员删除学生
+####### 教师管理员删除学生
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @group_required('admin', 'mas')
@@ -153,7 +153,6 @@ def delete_student(request, username):
     # 3. 权限判断
     requester = request.user
     is_admin = requester.groups.filter(name__in=['admin', 'mas']).exists()
-
     if not is_admin:
         # 辅导员只能删除自己班级下的学生
         profile = getattr(target, 'studentprofile', None)
@@ -162,7 +161,6 @@ def delete_student(request, username):
                 {"detail": "您只能删除自己负责班级的学生。"},
                 status=status.HTTP_403_FORBIDDEN
             )
-
     # 4. 执行删除
     target.delete()
     return Response(
@@ -171,11 +169,12 @@ def delete_student(request, username):
     )
 
 
-#######获取学号对应学生信息
+####### 获取学号对应学生信息
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @group_required('admin', 'tch', 'mas')
 def get_student_info(request, username):
+    # 1. 找用户
     try:
         target = User.objects.get(username=username)
     except User.DoesNotExist:
@@ -183,13 +182,25 @@ def get_student_info(request, username):
             {"detail": "找不到该学生。"},
             status=status.HTTP_404_NOT_FOUND
         )
+    # 2. 必须是学生组
     if not target.groups.filter(name='stu').exists():
         return Response(
             {"detail": "仅能查询学生账号。"},
             status=status.HTTP_400_BAD_REQUEST
         )
-    serializer = UserProfileSerializer(target)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    # 3. 用现有序列化器拿基础信息
+    base_data = UserProfileSerializer(target).data
+    # 4. 从 StudentProfile 拿 advisor
+    try:
+        profile = target.studentprofile
+        advisor = profile.advisor     # 关联的 User 对象，可能为 None
+    except StudentProfile.DoesNotExist:
+        advisor = None
+    # 5. 拼入 advisor 信息
+    base_data['advisor_id'] = profile.advisor_id if profile else None
+    base_data['advisor_name'] = advisor.last_name if advisor else None
+
+    return Response(base_data, status=status.HTTP_200_OK)
 
 ####### 修改学生班级导员
 @api_view(['PATCH'])
@@ -295,6 +306,56 @@ def get_student_leaves(request):
         'results': serializer.data,
     })
 
+###### 重置学生密码
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@group_required('admin', 'tch', 'mas')
+def reset_student_password(request, username):
+    """
+    重置学生密码：
+      - admin/mas：可重置任意学生
+      - tch：只能重置自己辅导学生的密码
+    前端可传 new_password 字段，否则默认 '123456'
+    """
+    # 1. 找到目标学生
+    try:
+        student = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response(
+            {"detail": "学生不存在。"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    # 2. 确保是学生账号
+    if not student.groups.filter(name='stu').exists():
+        return Response(
+            {"detail": "目标用户不是学生。"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    # 3. 权限校验
+    requester = request.user
+    is_admin = requester.groups.filter(name__in=['admin', 'mas']).exists()
+    if not is_admin:
+        # tch 只能重置自己辅导的学生
+        if not StudentProfile.objects.filter(user=student, advisor=requester).exists():
+            return Response(
+                {"detail": "您只能重置自己辅导学生的密码。"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+    # 4. 获取新密码或使用默认
+    new_password = request.data.get('new_password', '123456')
+    if len(new_password) < 6:
+        return Response(
+            {"new_password": "密码至少 6 位。"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    # 5. 重置并保存
+    student.set_password(new_password)
+    student.save()
+
+    return Response(
+        {"detail": f"学生 {username} 的密码已重置。"},
+        status=status.HTTP_200_OK
+    )
 
 ####### 管理员批准请假
 @api_view(['PATCH'])
