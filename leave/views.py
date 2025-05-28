@@ -486,7 +486,7 @@ def leave_qrcode(request, uuid):
     """
     # 构造被扫描后打开的页面地址
     verify_path = f"/leave/verify/{uuid}/"
-    verify_url  = f"http://192.168.123.202:3170{verify_path}"
+    verify_url  = f"https://leave.sdutee.xyz{verify_path}"
     #verify_url = "https://leave.sdutee.xyz"
     # 生成二维码
     img = qrcode.make(verify_url)
