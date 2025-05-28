@@ -448,14 +448,26 @@ def complete_leaving(request, leave_id):
 @permission_classes([IsAuthenticated])
 def cancel_leave(request, leave_id):
     try:
+        # 只允许删除当前登录用户自己创建的假条
         leave = Leave.objects.get(id=leave_id, student=request.user)
     except Leave.DoesNotExist:
-        return Response({'error': '没有找到或没有权限'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': '没有找到或没有权限'}, status=status.HTTP_400_BAD_REQUEST)
+
     if leave.status != 0:
         return Response({'error': '只有待批准的假条才能取消'}, status=status.HTTP_400_BAD_REQUEST)
-    leave.status = -1
-    leave.save()
-    return Response({'message': '假条已取消'}, status=status.HTTP_200_OK)
+
+    leave.delete()
+    return Response({'message': '假条已成功取消'}, status=status.HTTP_200_OK)
+# def cancel_leave(request, leave_id):
+#     try:
+#         leave = Leave.objects.get(id=leave_id, student=request.user)
+#     except Leave.DoesNotExist:
+#         return Response({'error': '没有找到或没有权限'}, status=status.HTTP_404_NOT_FOUND)
+#     if leave.status != 0:
+#         return Response({'error': '只有待批准的假条才能取消'}, status=status.HTTP_400_BAD_REQUEST)
+#     leave.status = -1
+#     leave.save()
+#     return Response({'message': '假条已取消'}, status=status.HTTP_200_OK)
 
 
 ####### 用户查询自己信息
