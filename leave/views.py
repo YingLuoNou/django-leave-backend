@@ -3,6 +3,9 @@ import io, qrcode
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User 
+from django.shortcuts import get_object_or_404 
+from django.conf import settings
+from django.http import HttpResponse 
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -470,15 +473,16 @@ def leave_qrcode(request, uuid):
     根据 verification_uuid 生成二维码，指向验证页面 URL。
     """
     # 构造被扫描后打开的页面地址
-    verify_url = f"{settings.SITE_URL}/leave/verify/{uuid}/"
-
+    verify_path = f"/leave/verify/{uuid}/"
+    verify_url  = f"https://leave.sdutee.xyz/{verify_path}"
+    #verify_url = "https://leave.sdutee.xyz/"
     # 生成二维码
     img = qrcode.make(verify_url)
     buf = io.BytesIO()
     img.save(buf, format='PNG')
     buf.seek(0)
 
-    return Response(buf, content_type='image/png')
+    return HttpResponse(buf, content_type='image/png')
 
 ####### 防伪假条查询
 @api_view(['GET'])
