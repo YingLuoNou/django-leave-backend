@@ -1,5 +1,5 @@
 # views.py
-
+import io, qrcode
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User 
@@ -462,6 +462,35 @@ def UserInfoView(request):
     serializer = UserProfileSerializer(request.user)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+####### 防伪二维码
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def leave_qrcode(request, uuid):
+    """
+    根据 verification_uuid 生成二维码，指向验证页面 URL。
+    """
+    # 构造被扫描后打开的页面地址
+    verify_url = f"{settings.SITE_URL}/leave/verify/{uuid}/"
+
+    # 生成二维码
+    img = qrcode.make(verify_url)
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    buf.seek(0)
+
+    return Response(buf, content_type='image/png')
+
+####### 防伪假条查询
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def verify_leave(request, uuid):
+    """
+    根据 verification_uuid 返回假条详情的 JSON。
+    """
+    leave = get_object_or_404(Leave, verification_uuid=uuid)
+    serializer = LeaveSerializer(leave)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 ####### 修改密码
 class ChangePasswordView(APIView):
@@ -473,3 +502,4 @@ class ChangePasswordView(APIView):
             serializer.save()
             return Response({"detail": "Password updated successfully."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
