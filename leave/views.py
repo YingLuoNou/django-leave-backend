@@ -485,9 +485,18 @@ def leave_qrcode(request, uuid):
 @permission_classes([AllowAny])
 def verify_leave(request, uuid):
     """
-    根据 verification_uuid 返回假条详情的 JSON。
+    防伪验证：只有已批准(status=1)或已销假(status=3)的假条才返回详情。
+    其他状态或不存在，一律返回 400 + “假条不存在或未批准”。
     """
     leave = get_object_or_404(Leave, verification_uuid=uuid)
+
+    # 只允许状态 1 和 3
+    if leave.status not in (1, 3):
+        return Response(
+            {"detail": "假条不存在或未批准"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     serializer = LeaveSerializer(leave)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
