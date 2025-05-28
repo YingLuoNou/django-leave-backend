@@ -21,6 +21,7 @@ class LeaveSerializer(serializers.ModelSerializer):
     reject_reason = serializers.CharField(
     required=False,
 )  # 拒绝理由是可选的
+    verification_uuid = serializers.UUIDField(read_only=True) #防伪用uuid
 
 
     class Meta:
