@@ -365,7 +365,7 @@ def approve_leave(request, leave_id):
     try:
         leave = Leave.objects.get(id=leave_id)
     except Leave.DoesNotExist:
-        return Response({'error': 'Leave not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': '假条未找到'}, status=status.HTTP_404_NOT_FOUND)
     leave.status = 1
     leave.approver = request.user.last_name
     leave.save()
@@ -380,7 +380,7 @@ def pre_approve_leave(request, leave_id):
     try:
         leave = Leave.objects.get(id=leave_id)
     except Leave.DoesNotExist:
-        return Response({'error': 'Leave not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': '假条未找到'}, status=status.HTTP_404_NOT_FOUND)
     leave.status = 5
     leave.approver = request.user.last_name
     leave.save()
@@ -395,7 +395,7 @@ def mas_approve_leave(request, leave_id):
     try:
         leave = Leave.objects.get(id=leave_id)
     except Leave.DoesNotExist:
-        return Response({'error': 'Leave not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': '假条未找到'}, status=status.HTTP_404_NOT_FOUND)
     leave.status = 1
     leave.approver = request.user.last_name
     leave.save()
@@ -410,7 +410,7 @@ def reject_leave(request, leave_id):
     try:
         leave = Leave.objects.get(id=leave_id)
     except Leave.DoesNotExist:
-        return Response({'error': 'Leave not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': '没有找到该假条'}, status=status.HTTP_404_NOT_FOUND)
 
     reject_reason = request.data.get('reject_reason')
     if reject_reason:
@@ -420,8 +420,8 @@ def reject_leave(request, leave_id):
         leave.status = 2
         leave.approver = request.user.last_name
         leave.save()
-        return Response({'status': 'Leave rejected'})
-    return Response({'error': 'Only pending leaves can be rejected'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'status': '已拒绝该假条'})
+    return Response({'error': '只有待批准的假条才能拒绝'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 ####### 管理员/tch 销假
@@ -432,12 +432,12 @@ def complete_leaving(request, leave_id):
     try:
         leave = Leave.objects.get(id=leave_id)
     except Leave.DoesNotExist:
-        return Response({'error': 'Leave not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': '没有找到假条'}, status=status.HTTP_404_NOT_FOUND)
     if leave.status == 1:
         leave.status = 3
         leave.save()
-        return Response({'status': 'Leave completed'})
-    return Response({'error': 'Only approved leaves can be completed'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'status': '销假成功'})
+    return Response({'error': '只有已批准的假条才能销假'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 ####### 学生取消请假
@@ -447,12 +447,12 @@ def cancel_leave(request, leave_id):
     try:
         leave = Leave.objects.get(id=leave_id, student=request.user)
     except Leave.DoesNotExist:
-        return Response({'error': 'Not found or no permission'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': '没有找到或没有权限'}, status=status.HTTP_404_NOT_FOUND)
     if leave.status != 0:
-        return Response({'error': 'Only pending leaves can be canceled'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': '只有待批准的假条才能取消'}, status=status.HTTP_400_BAD_REQUEST)
     leave.status = -1
     leave.save()
-    return Response({'message': 'Leave canceled'}, status=status.HTTP_200_OK)
+    return Response({'message': '假条已取消'}, status=status.HTTP_200_OK)
 
 
 ####### 用户查询自己信息
@@ -509,6 +509,6 @@ class ChangePasswordView(APIView):
         serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
-            return Response({"detail": "Password updated successfully."}, status=status.HTTP_200_OK)
+            return Response({"detail": "密码更新成功!"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
