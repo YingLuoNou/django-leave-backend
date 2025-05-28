@@ -5,4 +5,5 @@ pandas
 django-cors-headers
 openpyxl
 django-filter
+qrcode[pil]
 # use Python 3.12.4

@@ -20,6 +20,8 @@ from .views import (
     get_student_info,
     modify_student_profile,
     reset_student_password,
+    leave_qrcode,
+    verify_leave,
 )
 
 urlpatterns = [
@@ -32,18 +34,21 @@ urlpatterns = [
     path('request-leave/', request_leave, name='request_leave'),               # 提交请假
     path('view-leave/', get_student_leaves, name='view_leave_status'),         # 学生查看请假（分页可选）
     path('cancel-leave/<int:leave_id>/', cancel_leave, name='cancel_leave'),   # 取消请假
+    path('view-leave/qrcode/<uuid:uuid>/', leave_qrcode, name='leave-qrcode'), # 防伪二维码生成接口
 
     # 用户信息接口（旧路由和新路由同时保留）
     path('UserInfoView/', UserInfoView, name='UserInfoView'),                  # 旧路由，兼容前端未改动
     path('user-info/', UserInfoView, name='user_info'),                        # 新路由，推荐使用
 
     path('change-password/', ChangePasswordView.as_view(), name='change_password'),
+    # 假条防伪查询接口
+    path('leave/verify/<uuid:uuid>/', verify_leave, name='verify-leave'),
 
     # 管理员/教师/mas 接口
     path('admin/leaves/', AdminLeaveListView, name='admin_leave_list'),                             # 分页查看请假列表
     path('admin/students/add/', add_student, name='add-student'),                                  #教师管理员添加学生
     path('admin/students/delete/<str:username>/', delete_student, name='delete-student'),          #管理员删除学生(仅限管理员)
-    path('admin/students/modify/<str:username>/', modify_student_profile, name='modify-student'),
+    path('admin/students/modify/<str:username>/', modify_student_profile, name='modify-student'),   #修改学生信息
     path('admin/students/check/<str:username>/', get_student_info, name='get_student_info'),         # 操作学生前查询学生信息以供确认
     path('admin/students/reset_password/<str:username>/', reset_student_password, name='reset-student-password'),# 重置学生密码
     path('admin/approve-leave/<int:leave_id>/', approve_leave, name='approve_leave'),                # 批准请假

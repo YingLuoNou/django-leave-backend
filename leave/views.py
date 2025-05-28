@@ -1,8 +1,11 @@
 # views.py
-
+import io, qrcode
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User 
+from django.shortcuts import get_object_or_404 
+from django.conf import settings
+from django.http import HttpResponse 
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -365,7 +368,7 @@ def approve_leave(request, leave_id):
     try:
         leave = Leave.objects.get(id=leave_id)
     except Leave.DoesNotExist:
-        return Response({'error': 'Leave not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': '假条未找到'}, status=status.HTTP_404_NOT_FOUND)
     leave.status = 1
     leave.approver = request.user.last_name
     leave.save()
@@ -380,7 +383,7 @@ def pre_approve_leave(request, leave_id):
     try:
         leave = Leave.objects.get(id=leave_id)
     except Leave.DoesNotExist:
-        return Response({'error': 'Leave not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': '假条未找到'}, status=status.HTTP_404_NOT_FOUND)
     leave.status = 5
     leave.approver = request.user.last_name
     leave.save()
@@ -395,7 +398,7 @@ def mas_approve_leave(request, leave_id):
     try:
         leave = Leave.objects.get(id=leave_id)
     except Leave.DoesNotExist:
-        return Response({'error': 'Leave not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': '假条未找到'}, status=status.HTTP_404_NOT_FOUND)
     leave.status = 1
     leave.approver = request.user.last_name
     leave.save()
@@ -410,7 +413,7 @@ def reject_leave(request, leave_id):
     try:
         leave = Leave.objects.get(id=leave_id)
     except Leave.DoesNotExist:
-        return Response({'error': 'Leave not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': '没有找到该假条'}, status=status.HTTP_404_NOT_FOUND)
 
     reject_reason = request.data.get('reject_reason')
     if reject_reason:
@@ -420,8 +423,8 @@ def reject_leave(request, leave_id):
         leave.status = 2
         leave.approver = request.user.last_name
         leave.save()
-        return Response({'status': 'Leave rejected'})
-    return Response({'error': 'Only pending leaves can be rejected'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'status': '已拒绝该假条'})
+    return Response({'error': '只有待批准的假条才能拒绝'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 ####### 管理员/tch 销假
@@ -432,12 +435,12 @@ def complete_leaving(request, leave_id):
     try:
         leave = Leave.objects.get(id=leave_id)
     except Leave.DoesNotExist:
-        return Response({'error': 'Leave not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': '没有找到假条'}, status=status.HTTP_404_NOT_FOUND)
     if leave.status == 1:
         leave.status = 3
         leave.save()
-        return Response({'status': 'Leave completed'})
-    return Response({'error': 'Only approved leaves can be completed'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'status': '销假成功'})
+    return Response({'error': '只有已批准的假条才能销假'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 ####### 学生取消请假
@@ -447,12 +450,12 @@ def cancel_leave(request, leave_id):
     try:
         leave = Leave.objects.get(id=leave_id, student=request.user)
     except Leave.DoesNotExist:
-        return Response({'error': 'Not found or no permission'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': '没有找到或没有权限'}, status=status.HTTP_404_NOT_FOUND)
     if leave.status != 0:
-        return Response({'error': 'Only pending leaves can be canceled'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': '只有待批准的假条才能取消'}, status=status.HTTP_400_BAD_REQUEST)
     leave.status = -1
     leave.save()
-    return Response({'message': 'Leave canceled'}, status=status.HTTP_200_OK)
+    return Response({'message': '假条已取消'}, status=status.HTTP_200_OK)
 
 
 ####### 用户查询自己信息
@@ -460,6 +463,45 @@ def cancel_leave(request, leave_id):
 @permission_classes([IsAuthenticated])
 def UserInfoView(request):
     serializer = UserProfileSerializer(request.user)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+####### 防伪二维码
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def leave_qrcode(request, uuid):
+    """
+    根据 verification_uuid 生成二维码，指向验证页面 URL。
+    """
+    # 构造被扫描后打开的页面地址
+    verify_path = f"/leave/verify/{uuid}/"
+    verify_url  = f"https://leave.sdutee.xyz{verify_path}"
+    #verify_url = "https://leave.sdutee.xyz"
+    # 生成二维码
+    img = qrcode.make(verify_url)
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    buf.seek(0)
+
+    return HttpResponse(buf, content_type='image/png')
+
+####### 防伪假条查询
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def verify_leave(request, uuid):
+    """
+    防伪验证：只有已批准(status=1)或已销假(status=3)的假条才返回详情。
+    其他状态或不存在，一律返回 400 + “假条不存在或未批准”。
+    """
+    leave = get_object_or_404(Leave, verification_uuid=uuid)
+
+    # 只允许状态 1 和 3
+    if leave.status not in (1, 3):
+        return Response(
+            {"detail": "假条不存在或未批准"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    serializer = LeaveSerializer(leave)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -471,5 +513,6 @@ class ChangePasswordView(APIView):
         serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
-            return Response({"detail": "Password updated successfully."}, status=status.HTTP_200_OK)
+            return Response({"detail": "密码更新成功!"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    

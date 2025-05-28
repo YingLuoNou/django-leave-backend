@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import User
 # from django.contrib.auth.models import User
@@ -13,6 +14,12 @@ class Leave(models.Model):
     approver = models.TextField(blank=True)  # 批准人（操作人）批准/拒绝/销假
     advisor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='leaves_advised', limit_choices_to={'groups__name': 'tch'})  # 新增字段：带班辅导员
     reject_reason = models.CharField(max_length=255, null=True, blank=True)  # 拒绝理由
+    verification_uuid = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        help_text="防伪校验码"
+    )    # 防伪uuid
 
 
     def __str__(self):
