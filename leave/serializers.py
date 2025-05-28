@@ -30,10 +30,10 @@ class LeaveSerializer(serializers.ModelSerializer):
             'id', 'student', 'class_name', 'start_date', 'end_date', 'reason',
             'leave_time', 'status', 'approver',
             'student_number', 'student_name', 'student_class', 'student_email',
-            'advisor', 'advisor_name','reject_reason'  # 新增字段
+            'advisor', 'advisor_name','reject_reason','verification_uuid' # 新增字段
         ]
         read_only_fields = [
-            'student_number', 'student_name', 'student_class', 'student_email', 'advisor_name'
+            'student_number', 'student_name', 'student_class', 'student_email', 'advisor_name','verification_uuid'
         ]
     
     def get_student_number(self, obj):
