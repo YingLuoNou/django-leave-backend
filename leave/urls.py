@@ -23,6 +23,7 @@ from .views import (
     leave_qrcode,
     verify_leave,
 )
+from . import views_statistics  # <--- 必须加上这一行
 
 urlpatterns = [
     # 注册与登录
@@ -56,4 +57,5 @@ urlpatterns = [
     path('admin/mas-approve-leave/<int:leave_id>/', mas_approve_leave, name='mas_approve_leave'),    # mas 批准长假
     path('admin/reject-leave/<int:leave_id>/', reject_leave, name='reject_leave'),                  # 拒绝请假
     path('admin/complete-leave/<int:leave_id>/', complete_leaving, name='complete_leave'),          # 销假
+    path('statistics/dashboard/', views_statistics.StatisticsDataView.as_view(), name='statistics-dashboard'),
 ]
